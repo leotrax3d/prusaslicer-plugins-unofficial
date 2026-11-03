@@ -24,6 +24,7 @@ and which slicer settings it changes.
 | **[Speed Tower](docs/plugins/speed-tower.md)** | Steps requested print speed over a larger tower while retaining the configured volumetric-flow safety limit. | Calibration → Speed Tower |
 | **[Tolerance Test](docs/plugins/tolerance-test.md)** | A plate of holes with increasing clearance plus two matching, tapered test pins. | Calibration → Tolerance Test |
 | **[Gridfinity Bin Generator](docs/plugins/box-generator.md)** | Gridfinity-compatible bins in 42 mm grid units, with compartments, stacking lip, magnet pockets and an optional label. | Generators → Gridfinity Bin |
+| **[Mouse Ears](docs/snippets/mouse-ears.md)** | Start G-code that prints anti-warp discs on the corners of any model. The plugin shows it in a text field to copy into the printer's start G-code. | Generators → Mouse Ears |
 | **[Ambigram](docs/plugins/ambigram.md)** | A word overlaid with its own 180° rotation, or with a second word, so the plate reads both ways round. | Generators → Ambigram |
 
 Each function is an independent Marketplace plugin, so users install and update only what

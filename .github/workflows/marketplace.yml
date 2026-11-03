@@ -77,7 +77,7 @@ jobs:
           LUA: lua5.4
         run: |
           luac5.4 -p plugins/*/*.lua
-          python3 tools/gen-gridfinity-foot.py
+          python3 tools/gen-gridfinity-meshes.py
           git diff --exit-code -- '*.stl'
           ./tools/check-plugins.sh
           ./tools/run-tests.sh

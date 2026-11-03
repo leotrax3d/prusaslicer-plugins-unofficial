@@ -57,7 +57,7 @@ jobs:
 
       - name: Check generated meshes are up to date
         run: |
-          python3 tools/gen-gridfinity-foot.py
+          python3 tools/gen-gridfinity-meshes.py
           git diff --exit-code -- '*.stl'
 
       - name: Run geometry tests

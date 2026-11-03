@@ -4,8 +4,11 @@ Prints a flat disc on each corner of the first layer before the object starts, t
 down corners that would otherwise warp. It works on any model, including ones the
 plugins did not generate, because the slicer itself supplies the positions.
 
-This is a start G-code snippet, not a plugin. A plugin cannot do it; see
-[why not](#why-this-is-not-a-plugin).
+The ears themselves come from start G-code, because a plugin cannot place them; see
+[why not](#why-this-is-not-a-plugin). The **Mouse Ears** plugin
+(`dev.leotrax3d.mouse-ears`, Generators → Mouse Ears) hands that G-code over in a text
+field to copy, so it can be installed from the Marketplace like the other plugins. It
+carries the same text as `mouse-ears-start-gcode.gcode`, and a test keeps the two equal.
 
 **Status: sliced, not yet printed.** Sliced with the PrusaSlicer 3.0.0-alpha13 command line
 on the Prusa CORE One 0.4 HF profile, with 0.20mm BALANCED and Prusament PLA, and the snippet

@@ -27,9 +27,19 @@ api = {
     make_cone = function(r,h) return mesh(-r,r,-r,r,0,h,"cone") end,
     -- The foot STL, with a corner origin on purpose: the real file is centred,
     -- and placement must come from bounds either way.
+    -- Lip pieces are offset from the real files' origins for the same reason,
+    -- which also exercises the rotation arithmetic.
     load_stl = function(path)
-        assert(path == "gridfinity_foot.stl", "unexpected STL " .. path)
-        return mesh(0, 41.5, 0, 41.5, 0, 4.8, "stl:foot")
+        if path == "gridfinity_foot.stl" then return mesh(0, 41.5, 0, 41.5, 0, 4.8, "stl:foot") end
+        if path == "gridfinity_pocket.stl" then return mesh(-2, 37.1, 3, 42.1, 0, 4, "stl:pocket") end
+        if path == "gridfinity_lip_corner.stl" then return mesh(1, 4.75, 2, 5.75, 0.5, 4.2, "stl:lip_corner") end
+        if path == "gridfinity_lip_42.stl" then return mesh(5, 47, -1, 1.6, 0, 3.7, "stl:lip_42") end
+        if path == "gridfinity_lip_34.stl" then return mesh(-3, 31, 2, 4.6, 1, 4.7, "stl:lip_34") end
+        -- Support pieces start 1.2 mm inside the outer face; offset here by -1.
+        if path == "gridfinity_support_corner.stl" then return mesh(-1.55, 1, -2.55, 0, 2, 3.4, "stl:support_corner") end
+        if path == "gridfinity_support_42.stl" then return mesh(0, 42, 0.2, 1.6, 0, 1.4, "stl:support_42") end
+        if path == "gridfinity_support_34.stl" then return mesh(2, 36, 0.2, 1.6, -1, 0.4, "stl:support_34") end
+        error("unexpected STL " .. path)
     end,
     get_default_font = function() return "font" end,
     get_font = function(n) error("no font "..n) end,
@@ -50,7 +60,9 @@ function world_boxes(obj)
     local function push(m, tr, ty, rot)
         local b = m:bounds()
         local x0,x1,y0,y1,z0,z1 = b.min_x,b.max_x,b.min_y,b.max_y,b.min_z,b.max_z
+        if rot and rot.z == 90  then x0,x1,y0,y1 = -y1,-y0,x0,x1 end
         if rot and rot.z == 180 then x0,x1,y0,y1 = -x1,-x0,-y1,-y0 end
+        if rot and rot.z == 270 then x0,x1,y0,y1 = y0,y1,-x1,-x0 end
         if rot and rot.y == 180 then x0,x1,z0,z1 = -x1,-x0,-z1,-z0 end
         if rot and rot.x == 90  then
             local ny0,ny1 = -z1,-z0
