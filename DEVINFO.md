@@ -289,11 +289,12 @@ union-only alternative and is a different effect, not a substitute.
 **Second plugin type: `print.print_mode`** (present in alpha13; `PrintModePlugins.cpp`).
 Its `execute` returns a table of setting overrides, applied as a "macro overrides" layer.
 Unlike `ConfigBox:set` it can write strings, but only keys marked overridable in
-`ConfigDefsFDM.cpp`: 238 print and material keys. No G-code template is among them. The
-only string keys are `filament_colour`, `filament_ramming_parameters`, `filament_type`
-and `post_process`. A print mode sees configuration values only, never geometry.
-Setting `post_process` would make a plugin launch arbitrary programs after export. That
-is a sandbox escape and is deliberately not used here.
+`ConfigDefsFDM.cpp` (266 print and material keys); `set_override` rejects every other
+key at runtime. No G-code template is among them, and the only string keys are
+`filament_colour`, `filament_ramming_parameters` and `filament_type`. `post_process`
+is not overridable, and as a `vector<string>` it would also fall through
+`set_box_override`'s unsupported-type branch, so a print mode cannot launch programs.
+A print mode sees configuration values only, never geometry.
 
 **Mouse ears as a plugin**: a plugin cannot see existing objects, cannot write string
 settings such as `start_gcode` (`ConfigBox:set` only handles numbers, percentages and
