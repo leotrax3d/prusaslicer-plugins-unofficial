@@ -55,6 +55,11 @@ jobs:
           LUA: lua5.4
         run: ./tools/check-plugins.sh
 
+      - name: Check generated meshes are up to date
+        run: |
+          python3 tools/gen-gridfinity-foot.py
+          git diff --exit-code -- '*.stl'
+
       - name: Run geometry tests
         env:
           LUA: lua5.4
@@ -74,7 +79,7 @@ jobs:
             id=$(basename "$bundle")
             # Zip from inside the bundle so entries are stored flat, with no
             # directory prefix. -X drops platform-specific extra fields.
-            (cd "$bundle" && zip -X -r "$GITHUB_WORKSPACE/dist/$id.zip" manifest.json *.lua)
+            (cd "$bundle" && zip -X -r "$GITHUB_WORKSPACE/dist/$id.zip" manifest.json *.lua $(ls *.stl 2>/dev/null))
           done
 
       - name: Verify archive layout

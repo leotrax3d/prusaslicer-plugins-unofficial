@@ -28,6 +28,16 @@ for _, b in ipairs(boxes) do
 end
 check("base volumes stay inside footprint", escaped_base_volumes, 0)
 
+local feet = {}
+for _, b in ipairs(boxes) do
+    if b.tag == "stl:foot" then feet[#feet + 1] = b end
+end
+check("one STL foot per grid cell", #feet, 2)
+check("first foot centred in its cell", (feet[1].x0 + feet[1].x1) * 0.5, 20.75)
+check("second foot one grid unit along", (feet[2].x0 + feet[2].x1) * 0.5, 62.75)
+check("feet start on the bed", math.min(feet[1].z0, feet[2].z0), 0)
+check("feet overlap into the body", feet[1].z1 > 4.75 and 1 or 0, 1)
+
 local cavity = extent(boxes, function(b)
     return b.type=="Negative" and b.z0 >= 5.9 and b.tag ~= "text:BITS"
 end)

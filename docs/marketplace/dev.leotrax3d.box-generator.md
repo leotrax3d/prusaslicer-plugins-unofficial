@@ -15,7 +15,7 @@ Generates Gridfinity-compatible storage bins in 42 mm grid units, with compartme
 
 ### Good to know
 - One grid unit is 41.5 × 41.5 mm outside, which leaves 0.5 mm play in a 42 mm grid.
-- The base and lip slopes are printed in 0.2 mm steps, because the plugin API cannot create arbitrary shapes.
+- The locating foot has exact 45° faces, from an STL shipped with the plugin. The stacking lip is still printed in 0.2 mm steps.
 - An independent implementation of the published dimensions. Not affiliated with Zack Freedman or the Gridfinity community.
 - Formerly *Parametric Box Generator*. Version 2.0 replaces the box with Gridfinity bins.
 

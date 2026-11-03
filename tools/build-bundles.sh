@@ -3,7 +3,7 @@
 # Assembles the combined bundles in bundles/ from the individual plugins.
 #
 # Each bundles/<id>/ holds a manifest.json and a plugins.txt naming the plugin
-# directories to merge. Their .lua files are copied flat into dist/bundles/<id>/.
+# directories to merge. Their .lua and .stl files are copied flat into dist/bundles/<id>/.
 # Shared modules such as labels.lua exist once per plugin; a module that appears
 # in two members with different content would make one plugin load the other's
 # copy, so that is an error rather than a silent overwrite. Fix it by making the
@@ -29,7 +29,8 @@ for bundle in bundles/*/; do
             status=1
             continue
         fi
-        for file in "$src"/*.lua; do
+        for file in "$src"/*.lua "$src"/*.stl; do
+            [ -e "$file" ] || continue
             name=$(basename "$file")
             if [ -f "$target/$name" ]; then
                 if ! cmp -s "$file" "$target/$name"; then

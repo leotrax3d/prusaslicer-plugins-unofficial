@@ -1,6 +1,8 @@
 -- Gridfinity-compatible bin generator.
--- Sloped foot faces are approximated in printable 0.2 mm steps because the
--- current project.plugin API exposes primitives but no arbitrary mesh builder.
+-- The locating foot is loaded from gridfinity_foot.stl, which has the exact 45
+-- degree faces; tools/gen-gridfinity-foot.py generates it. The stacking lip is
+-- still approximated in printable 0.2 mm steps, because the plugin API has
+-- primitives but no way to build or stretch a sloped mesh.
 
 info = {
     id = "dev.leotrax3d.box-generator",
@@ -24,7 +26,8 @@ info = {
 
 local GRID, XY_CLEARANCE, HEIGHT_UNIT = 42.0, 0.5, 7.0
 local BASE_HEIGHT = 4.75
-local FOOT_BOTTOM, FOOT_MIDDLE, FOOT_TOP = 35.6, 37.2, 41.5
+local FOOT_BOTTOM, FOOT_TOP = 35.6, 41.5
+local FOOT_STL = "gridfinity_foot.stl"
 local FOOT_RADIUS, LIP_HEIGHT = 3.75, 4.4
 local LIP_LOWER, LIP_VERTICAL, LIP_UPPER = 0.7, 1.8, 1.9
 local MAGNET_RADIUS, MAGNET_DEPTH, MAGNET_OFFSET = 3.25, 2.4, 13.0
@@ -36,18 +39,6 @@ end
 
 local function integer(value, low, high)
     return math.floor(clamp(value, low, high) + 0.5)
-end
-
-local function add_profile(shapes, builder, cx, cy, z0, h, from_size, to_size)
-    local count = math.max(1, math.ceil(h / PROFILE_STEP))
-    local step_h = h / count
-    for step = 1, count do
-        local size = from_size + (to_size - from_size) * step / count
-        builder:add_slab(
-            shapes.rounded_slab(size, size, step_h + 0.01, math.min(FOOT_RADIUS, size * 0.5)),
-            {x = cx - size * 0.5, y = cy - size * 0.5, z = z0 + (step - 1) * step_h}
-        )
-    end
 end
 
 local function lip_opening_at(z)
@@ -99,16 +90,20 @@ function execute(opts)
     local rows = integer(opts.rows, 1, math.min(20, max_rows))
     local bin = shapes.builder()
 
-    -- One standard locating foot per occupied grid cell.
+    -- One standard locating foot per occupied grid cell. The STL is loaded once
+    -- and placed by its bounds, like every primitive here; the slicer copies
+    -- the mesh for each volume.
+    local foot = api.load_stl(FOOT_STL)
+    local fb = foot:bounds()
     for gx = 0, ux - 1 do
         for gy = 0, uy - 1 do
             local cx, cy = gx * GRID + FOOT_TOP * 0.5, gy * GRID + FOOT_TOP * 0.5
-            add_profile(shapes, bin, cx, cy, 0, 0.8, FOOT_BOTTOM, FOOT_MIDDLE)
-            bin:add_slab(
-                shapes.rounded_slab(FOOT_MIDDLE, FOOT_MIDDLE, 1.8, FOOT_RADIUS),
-                {x = cx - FOOT_MIDDLE * 0.5, y = cy - FOOT_MIDDLE * 0.5, z = 0.8}
-            )
-            add_profile(shapes, bin, cx, cy, 2.6, BASE_HEIGHT - 2.6, FOOT_MIDDLE, FOOT_TOP)
+            bin:add {
+                mesh = foot,
+                x = cx - (fb.min_x + fb.max_x) * 0.5,
+                y = cy - (fb.min_y + fb.max_y) * 0.5,
+                z = -fb.min_z
+            }
         end
     end
 

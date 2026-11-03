@@ -25,6 +25,12 @@ api = {
     -- deliberately NOT centred, to prove nothing assumes a centred cylinder
     make_cylinder = function(r,h) return mesh(-r,r,-r,r,0,h,"cyl") end,
     make_cone = function(r,h) return mesh(-r,r,-r,r,0,h,"cone") end,
+    -- The foot STL, with a corner origin on purpose: the real file is centred,
+    -- and placement must come from bounds either way.
+    load_stl = function(path)
+        assert(path == "gridfinity_foot.stl", "unexpected STL " .. path)
+        return mesh(0, 41.5, 0, 41.5, 0, 4.8, "stl:foot")
+    end,
     get_default_font = function() return "font" end,
     get_font = function(n) error("no font "..n) end,
     emboss_text = function(o)

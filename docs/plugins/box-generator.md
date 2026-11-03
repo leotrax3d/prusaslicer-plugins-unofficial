@@ -23,8 +23,14 @@ generator is not affiliated with or endorsed by him or the Gridfinity community.
 One unit is 41.5 × 41.5 mm outside, leaving 0.5 mm total clearance in a 42 mm grid.
 The locating base is 4.75 mm high: 0.8 mm lower 45° ramp, 1.8 mm vertical section and
 2.15 mm upper 45° ramp. The 4.4 mm stacking profile uses the published 0.7 / 1.8 /
-1.9 mm sections and 0.25 mm offset per side. Slopes are represented in printable 0.2 mm
-steps because the alpha13 plugin API cannot create arbitrary polygon meshes.
+1.9 mm sections and 0.25 mm offset per side.
+
+The locating foot is a real mesh, `gridfinity_foot.stl`, with exact 45° faces and corner
+radii that shrink with the offset (3.75 mm at the top, 0.8 mm at the bottom). The plugin
+loads it once and places one copy per grid cell. `tools/gen-gridfinity-foot.py` generates
+it, and CI fails if the committed file does not match the script. The stacking lip is
+still built in printable 0.2 mm steps: its length depends on the bin size, and the plugin
+API can neither build a sloped mesh nor stretch a loaded one.
 
 ## Implementation and validation
 

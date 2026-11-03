@@ -7,8 +7,13 @@ plugins did not generate, because the slicer itself supplies the positions.
 This is a start G-code snippet, not a plugin. A plugin cannot do it; see
 [why not](#why-this-is-not-a-plugin).
 
-**Status: untested.** Derived from PrusaSlicer's source, but not yet sliced or printed.
-Follow the checks below before printing with it.
+**Status: sliced, not yet printed.** Sliced with the PrusaSlicer 3.0.0-alpha13 command line
+on the Prusa CORE One 0.4 HF profile, with 0.20mm BALANCED and Prusament PLA, and the snippet
+appended to the profile's start G-code. Every variable resolved, and on a 40 × 25 mm test
+block the four ear centres landed within 0.7 mm of the block's corners, after the purge
+line and before the first layer. The extrusion per millimetre (0.0374 mm for a 0.45 mm line
+at 0.2 mm on 1.75 mm filament) and the retraction (0.7 mm, from the profile) came out as
+intended. Follow the checks below before the first real print.
 
 ## Install
 
