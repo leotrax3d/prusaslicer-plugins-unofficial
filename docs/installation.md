@@ -82,9 +82,9 @@ The result should look like this:
         └── tolerance_test.lua
 ```
 
-Each plugin appears under the menu path given in its `menu` field. The bundle above adds
-Fan Tower, Speed Tower and Tolerance Test under a `Calibration` submenu. Running one opens
-a generated parameter dialog; confirming it builds the objects in the current project.
+Each plugin appears under the menu path given in its `menu` field. Calibration plugins
+appear under `Calibration`; the Gridfinity generator appears under `Generators`. Running
+one opens a generated parameter dialog and confirming it builds in the current project.
 
 ## Installing straight from a clone
 

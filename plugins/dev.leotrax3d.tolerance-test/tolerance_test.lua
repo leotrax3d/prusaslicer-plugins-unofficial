@@ -25,6 +25,7 @@ info = {
 local MARGIN = 4.0      -- material margin around the holes [mm]
 local LABEL_ROW = 6.0   -- depth of the label strip in front of the holes [mm]
 local PIN_GAP = 10.0    -- gap between the test pin and the plate [mm]
+local PIN_TIP = 1.5     -- conical lead-in that avoids measuring the first-layer bulge
 
 local function clamp(value, low, high)
     return math.max(low, math.min(high, value))
@@ -97,21 +98,35 @@ function execute(opts)
         }
     }
 
-    -- The test pin as its own object, so it prints loose beside the plate.
-    -- Same bounds-based placement, and sat on the bed rather than at whatever
-    -- Z the primitive happens to start from.
-    local pin = api.make_cylinder(pin_d * 0.5, thickness * 2)
-    local pb = pin:bounds()
-    api.project:add_object {
-        mesh = pin,
-        translate = {
-            x = plate_w * 0.5 - (pb.min_x + pb.max_x) * 0.5,
-            y = plate_d + PIN_GAP - pb.min_y,
-            z = -pb.min_z
-        },
-        object_params = {
-            fill_density = "100%",
-            perimeters = 3
+    -- Two pins make a damaged or locally over-extruded sample obvious. Each has
+    -- a conical lead-in at the top, so the first-layer bulge at its flat base is
+    -- never the edge used to start the fit test.
+    for sample = 1, 2 do
+        local shaft_h = math.max(2, thickness * 2 - PIN_TIP)
+        local pin = api.make_cylinder(pin_d * 0.5, shaft_h)
+        local pb = pin:bounds()
+        local tip = api.make_cone(pin_d * 0.5, PIN_TIP)
+        local tb = tip:bounds()
+        local center_x = plate_w * 0.5 + (sample - 1.5) * (pin_d + 4)
+        api.project:add_object {
+            mesh = pin,
+            translate = {
+                x = center_x - (pb.min_x + pb.max_x) * 0.5,
+                y = plate_d + PIN_GAP - pb.min_y,
+                z = -pb.min_z
+            },
+            other_volumes = {{
+                mesh = tip,
+                translate = {
+                    x = -(tb.min_x + tb.max_x) * 0.5,
+                    y = -(tb.min_y + tb.max_y) * 0.5,
+                    z = shaft_h - tb.min_z
+                }
+            }},
+            object_params = {
+                fill_density = "100%",
+                perimeters = 3
+            }
         }
-    }
+    end
 end

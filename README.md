@@ -21,9 +21,9 @@ and which slicer settings it changes.
 | Plugin | Purpose | Menu |
 | --- | --- | --- |
 | **[Fan Tower](docs/plugins/fan-tower.md)** | Steps part cooling per height band. A slender pillar beside the tower forces a travel move every layer, so it barely cools between passes and shows insufficient cooling first. | Calibration → Fan Tower |
-| **[Speed Tower](docs/plugins/speed-tower.md)** | Steps print speed per height band using modifier volumes, with the slicer's own slowdown and volumetric limits disabled so the bands print at the speeds they claim. | Calibration → Speed Tower |
-| **[Tolerance Test](docs/plugins/tolerance-test.md)** | A plate of holes with increasing clearance plus a matching test pin, to find the fit allowance your printer and filament actually need. | Calibration → Tolerance Test |
-| **[Box Generator](docs/plugins/box-generator.md)** | Storage boxes, drawer inserts and organiser trays, specified by the space you need *inside* them. Lid, compartment dividers, stacking groove, finger notch and engraved label. | Generators → Parametric Box |
+| **[Speed Tower](docs/plugins/speed-tower.md)** | Steps requested print speed over a larger tower while retaining the configured volumetric-flow safety limit. | Calibration → Speed Tower |
+| **[Tolerance Test](docs/plugins/tolerance-test.md)** | A plate of holes with increasing clearance plus two matching, tapered test pins. | Calibration → Tolerance Test |
+| **[Gridfinity Bin Generator](docs/plugins/box-generator.md)** | Gridfinity-compatible bins in 42 mm grid units, with compartments, stacking lip, magnet pockets and an optional label. | Generators → Gridfinity Bin |
 | **[Ambigram](docs/plugins/ambigram.md)** | A word overlaid with its own 180° rotation, or with a second word, so the plate reads both ways round. | Generators → Ambigram |
 
 Each function is an independent Marketplace plugin, so users install and update only what
@@ -136,8 +136,8 @@ All three run in CI before a release is published, along with a check that each 
 archive is flat and carries a root `manifest.json`.
 
 The tests go only as far as arithmetic. `api`, `VolumeType` and the preset system exist
-only inside PrusaSlicer, so the mock can confirm that a lid clears the box it was generated
-for, but not that either comes out of the printer right. Everything beyond that is
+only inside PrusaSlicer, so the mock can confirm the dimensions of a Gridfinity foot, bin
+and divider, but not that the physical fit is correct. Everything beyond that is
 exercised by hand.
 
 ## Contributing

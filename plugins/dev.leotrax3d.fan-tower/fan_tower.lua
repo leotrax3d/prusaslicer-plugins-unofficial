@@ -69,8 +69,6 @@ function execute(opts)
     local bed = api.project:current_bed()
     local layer_height = bed:print_presets():value("layer_height")
 
-    api.project:clear_layer_custom_steps(bed)
-
     -- Thin walls and light infill, so cooling drives the result rather than
     -- wall thickness masking it.
     bed:print_presets():set("fill_density", "10%")
@@ -115,14 +113,12 @@ function execute(opts)
     local max_fan = clamp(opts.max_fan, 0, 100)
     local fan_span = max_fan - min_fan
 
+    local band_fans = {}
     for i = 1, steps do
         local band_z = step_height * (i - 1)
         local fan = min_fan + fan_span * (i - 1) / (steps - 1)
         local rounded_fan = math.floor(fan + 0.5)
-
-        -- Switch one layer above the band start, so the change does not land in
-        -- the last layer of the preceding band.
-        api.project:insert_layer_custom_gcode(bed, band_z + layer_height, fan_gcode(rounded_fan))
+        band_fans[i] = rounded_fan
 
         if opts.enable_labels then
             table.insert(other_volumes, labels.front_label {
@@ -133,6 +129,19 @@ function execute(opts)
                 size = math.min(6, step_height * 0.6)
             })
         end
+    end
+
+    -- CoolingBuffer evaluates every layer independently and may emit M107 at
+    -- its start. Reassert the requested value on every printed layer instead
+    -- of assuming one M106 at a band boundary remains active. Do not clear the
+    -- bed's existing custom G-code: it belongs to the user, not this plugin.
+    local layer_count = math.ceil(total_height / layer_height - 1e-6)
+    for layer = 1, layer_count do
+        local z = math.min(layer * layer_height, total_height)
+        local band = math.min(steps, math.floor((z - 1e-6) / step_height) + 1)
+        api.project:insert_layer_custom_gcode(
+            bed, z, fan_gcode(band_fans[band]) .. " ; Leotrax3D Fan Tower"
+        )
     end
 
     api.project:add_object {

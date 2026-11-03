@@ -22,6 +22,7 @@ api = {
     make_cube = function(w,d,h) return mesh(0,w,0,d,0,h,"cube") end,
     -- deliberately NOT centred, to prove nothing assumes a centred cylinder
     make_cylinder = function(r,h) return mesh(-r,r,-r,r,0,h,"cyl") end,
+    make_cone = function(r,h) return mesh(-r,r,-r,r,0,h,"cone") end,
     get_default_font = function() return "font" end,
     get_font = function(n) error("no font "..n) end,
     emboss_text = function(o)

@@ -7,8 +7,9 @@ filament.
 
 ## What it builds
 
-A solid plate with a row of holes, each a different amount larger than a test pin printed
-alongside it. The clearance is engraved into the top surface in front of each hole.
+A solid plate with a row of holes, each a different amount larger than two test pins
+printed alongside it. Each pin has a conical lead-in, so its first-layer bulge is not the
+edge used to start the fit test. The clearance is engraved in front of each hole.
 
 Print it, then work along the row and find the first hole the pin seats in cleanly. That
 clearance is what your own designs should use.

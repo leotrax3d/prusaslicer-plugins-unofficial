@@ -54,7 +54,7 @@ independent utility plugins are the start of it:
 
 | Plugin | Mechanism | Status |
 | --- | --- | --- |
-| Box Generator | rounded slabs, ordered Solid/Negative volumes | built, validated and tested |
+| Gridfinity Bin Generator | 42 mm bins with independent negative pockets | rebuilt, validation in progress |
 | Ambigram | overlaid text volumes, union only | built, validated and tested |
 
 Both have their placement arithmetic covered by `tools/run-tests.sh`; their distributable

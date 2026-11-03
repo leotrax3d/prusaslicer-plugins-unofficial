@@ -51,14 +51,14 @@ plugin runs:
 | `full_fan_speed_layer` | 0 | Disables the fan ramp-up, which would fight the bands |
 | `disable_fan_first_layers` | 1 | Keeps the fan off for the first layer only |
 
-**Why auto cooling is turned off.** Fan speed is firmware state, so the plugin steps it
-with `M106` injected at each band boundary. But PrusaSlicer's `CoolingBuffer` recomputes a
+**Why auto cooling is turned off.** Fan speed is firmware state, so the plugin reasserts
+it with `M106` or `M107` on every printed layer. PrusaSlicer's `CoolingBuffer` recomputes a
 fan speed for *every* layer and emits its own `M106` whenever that value changes — which
 would silently overwrite the bands. Short layers are especially prone to it, since the
 buffer forces full throttle when a layer prints faster than `slowdown_below_layer_time`.
 With auto cooling off and `fan_always_on` off, its computed speed stays 0 for every layer,
-so it emits one `M107` at the start and then stays quiet, leaving the injected commands
-authoritative.
+so the per-layer injected command remains authoritative for the printable moves that
+follow it. Existing user-created custom G-code steps are left untouched.
 
 ## Limitations
 

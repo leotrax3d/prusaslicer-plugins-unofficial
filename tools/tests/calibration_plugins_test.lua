@@ -48,6 +48,7 @@ end
 api = {
     make_cube = function(w, d, h) return mesh("cube", w, d, h) end,
     make_cylinder = function(r, h) return mesh("cylinder", r, h) end,
+    make_cone = function(r, h) return mesh("cone", r, h) end,
     project = {
         current_bed = function() return bed end,
         clear_layer_custom_steps = function() gcodes = {} end,
@@ -77,9 +78,9 @@ execute {
 eq(#added, 1, "fan object count")
 eq(added[1].mesh.a, 10, "fan minimum width")
 eq(added[1].mesh.c, 4, "fan minimum total height")
-eq(#gcodes, 2, "fan step count")
-eq(gcodes[1].code, "M107", "fan minimum command")
-eq(gcodes[2].code, "M106 S255", "fan maximum command")
+eq(#gcodes, 20, "fan command on every layer")
+eq(gcodes[1].code, "M107 ; Leotrax3D Fan Tower", "fan minimum command")
+eq(gcodes[20].code, "M106 S255 ; Leotrax3D Fan Tower", "fan maximum command")
 eq(material_sets[0].cooling, 0, "fan slot zero")
 eq(material_sets[1].cooling, 0, "fan slot one")
 
@@ -91,12 +92,13 @@ execute {
     size = -5, enable_labels = false
 }
 eq(#added, 1, "speed object count")
-eq(added[1].mesh.a, 10, "speed minimum width")
+eq(added[1].mesh.a, 40, "speed minimum width")
 eq(added[1].mesh.c, 4, "speed minimum total height")
 eq(#added[1].other_volumes, 2, "speed modifier count")
 eq(added[1].other_volumes[1].params.perimeter_speed, 5, "speed lower bound")
-eq(added[1].other_volumes[2].params.perimeter_speed, 500, "speed upper bound")
-eq(material_sets[1].filament_max_volumetric_speed, 0, "speed slot one")
+eq(added[1].other_volumes[2].params.perimeter_speed, 250, "speed upper bound")
+eq(material_sets[1].slowdown_below_layer_time, 0, "speed disables layer slowdown")
+eq(material_sets[1].filament_max_volumetric_speed, nil, "speed retains flow safety limit")
 
 -- Tolerance Test: clearance is diametral, sorted, and object-local settings
 -- avoid modifying the current project's global print profile.
@@ -106,11 +108,13 @@ execute {
     pin_diameter = 0.1, min_clearance = 1.0, max_clearance = 0.2,
     steps = 1, thickness = -2, enable_labels = false
 }
-eq(#added, 2, "tolerance object count")
+eq(#added, 3, "tolerance plate and two pins")
 eq(#added[1].other_volumes, 2, "tolerance hole count")
 eq(added[1].other_volumes[1].mesh.a, 1.1, "tolerance sorted minimum radius")
 eq(added[1].other_volumes[2].mesh.a, 1.5, "tolerance sorted maximum radius")
 eq(added[1].object_params.fill_density, "100%", "tolerance local infill")
+eq(added[2].other_volumes[1].mesh.kind, "cone", "first pin lead-in")
+eq(added[3].other_volumes[1].mesh.kind, "cone", "second pin lead-in")
 eq(next(print_sets), nil, "tolerance leaves global print settings alone")
 
 print("ok   calibration plugin validation and isolation")

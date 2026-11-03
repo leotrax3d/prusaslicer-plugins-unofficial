@@ -1,198 +1,164 @@
--- Parametric Box Generator -- storage boxes, drawer inserts and organiser trays.
---
--- Builds a box from its *inside* dimensions, because that is what you actually
--- know: the thing you want to put in it. Walls, floor and lid are added outside
--- those numbers, so raising the wall thickness never shrinks the usable space.
---
--- Everything is procedural geometry. No settings are changed and no G-code is
--- injected, which makes this the one plugin here that cannot be undermined by
--- the slicer recomputing something per layer.
+-- Gridfinity-compatible bin generator.
+-- Sloped foot faces are approximated in printable 0.2 mm steps because the
+-- current project.plugin API exposes primitives but no arbitrary mesh builder.
 
 info = {
     id = "dev.leotrax3d.box-generator",
     type = "project.plugin",
-    title = "Box Generator",
-    menu = "Generators/Parametric Box",
+    title = "Gridfinity Bin Generator",
+    menu = "Generators/Gridfinity Bin",
     params = {
-        {name = "inner_width",   label = "Inner Width [mm]",        type = "float",  default = 80},
-        {name = "inner_depth",   label = "Inner Depth [mm]",        type = "float",  default = 60},
-        {name = "inner_height",  label = "Inner Height [mm]",       type = "float",  default = 40},
-        {name = "wall",          label = "Wall Thickness [mm]",     type = "float",  default = 2.0},
-        {name = "floor_th",      label = "Floor Thickness [mm]",    type = "float",  default = 1.6},
-        {name = "corner_radius", label = "Corner Radius [mm]",      type = "float",  default = 3.0},
+        {name = "units_x",       label = "Grid Units X",            type = "int",    default = 1},
+        {name = "units_y",       label = "Grid Units Y",            type = "int",    default = 1},
+        {name = "height_units",  label = "Height Units (7 mm)",     type = "int",    default = 3},
+        {name = "wall",          label = "Wall Thickness [mm]",     type = "float",  default = 1.2},
+        {name = "floor_th",      label = "Floor Thickness [mm]",    type = "float",  default = 1.2},
         {name = "columns",       label = "Compartments Across",     type = "int",    default = 1},
         {name = "rows",          label = "Compartments Deep",       type = "int",    default = 1},
-        {name = "divider_th",    label = "Divider Thickness [mm]",  type = "float",  default = 1.6},
-        {name = "divider_pct",   label = "Divider Height [%]",      type = "int",    default = 100},
-        {name = "stackable",     label = "Stacking Groove",         type = "bool",   default = false},
-        {name = "finger_notch",  label = "Finger Notch",            type = "bool",   default = false},
-        {name = "with_lid",      label = "Generate Lid",            type = "bool",   default = false},
-        {name = "lid_height",    label = "Lid Height [mm]",         type = "float",  default = 8},
-        {name = "clearance",     label = "Fit Clearance [mm]",      type = "float",  default = 0.25},
+        {name = "divider_th",    label = "Divider Thickness [mm]",  type = "float",  default = 1.2},
+        {name = "magnet_holes",  label = "6x2 mm Magnet Pockets",   type = "bool",   default = false},
+        {name = "stacking_lip",  label = "Stacking Lip",            type = "bool",   default = true},
         {name = "label",         label = "Front Label",             type = "string", default = ""}
     }
 }
 
-local PART_GAP = 12.0    -- space between the box and the lid on the bed [mm]
-local GROOVE_INSET = 0.5 -- how far the stacking groove sits in from the outer face [mm]
-local GROOVE_DEPTH = 1.6 -- nominal groove depth, reduced if the floor is thin [mm]
-local BREAK = 1.0        -- overshoot so a cut passes cleanly through a face [mm]
+local GRID, XY_CLEARANCE, HEIGHT_UNIT = 42.0, 0.5, 7.0
+local BASE_HEIGHT = 4.75
+local FOOT_BOTTOM, FOOT_MIDDLE, FOOT_TOP = 35.6, 37.2, 41.5
+local FOOT_RADIUS, LIP_HEIGHT = 3.75, 4.4
+local MAGNET_RADIUS, MAGNET_DEPTH, MAGNET_OFFSET = 3.25, 2.4, 13.0
+local BREAK, PROFILE_STEP = 0.2, 0.2
 
 local function clamp(value, low, high)
     return math.max(low, math.min(high, value))
 end
 
-
 local function integer(value, low, high)
     return math.floor(clamp(value, low, high) + 0.5)
 end
 
--- Required inside execute(): the scan pass that reads `info` runs each file in a
--- bare Lua engine with neither `api` nor the slicer's custom require, so a
--- top-level require would silently cost this plugin its menu entry.
+local function add_profile(shapes, builder, cx, cy, z0, h, from_size, to_size)
+    local count = math.max(1, math.ceil(h / PROFILE_STEP))
+    local step_h = h / count
+    for step = 1, count do
+        local size = from_size + (to_size - from_size) * step / count
+        builder:add_slab(
+            shapes.rounded_slab(size, size, step_h + 0.01, math.min(FOOT_RADIUS, size * 0.5)),
+            {x = cx - size * 0.5, y = cy - size * 0.5, z = z0 + (step - 1) * step_h}
+        )
+    end
+end
+
+local function foot_size_at(z)
+    if z <= 0.8 then
+        return FOOT_BOTTOM + (FOOT_MIDDLE - FOOT_BOTTOM) * z / 0.8
+    elseif z <= 2.6 then
+        return FOOT_MIDDLE
+    end
+    return FOOT_MIDDLE + (FOOT_TOP - FOOT_MIDDLE) * (z - 2.6) / (BASE_HEIGHT - 2.6)
+end
+
+local function add_stacking_lip(builder, outer_w, outer_d, ux, uy, z0)
+    local count = math.ceil(LIP_HEIGHT / PROFILE_STEP)
+    local step_h = LIP_HEIGHT / count
+    for step = 1, count do
+        local z = (step - 1) * step_h
+        local profile = foot_size_at(math.min(BASE_HEIGHT, z + step_h))
+        local inner_w = math.min(outer_w - 0.2, (ux - 1) * GRID + profile + XY_CLEARANCE)
+        local inner_d = math.min(outer_d - 0.2, (uy - 1) * GRID + profile + XY_CLEARANCE)
+        local bx, by = (outer_w - inner_w) * 0.5, (outer_d - inner_d) * 0.5
+        builder:add {mesh = api.make_cube(outer_w, by, step_h), x = 0, y = 0, z = z0 + z}
+        builder:add {mesh = api.make_cube(outer_w, by, step_h), x = 0, y = outer_d - by, z = z0 + z}
+        builder:add {mesh = api.make_cube(bx, inner_d, step_h), x = 0, y = by, z = z0 + z}
+        builder:add {mesh = api.make_cube(bx, inner_d, step_h), x = outer_w - bx, y = by, z = z0 + z}
+    end
+end
+
 function execute(opts)
     local shapes = require('shapes')
     local labels = require('labels')
 
-    local wall = clamp(opts.wall, 0.6, 10)
-    local floor_th = clamp(opts.floor_th, 0.4, 10)
-    local clearance = clamp(opts.clearance, 0, 3)
+    local ux = integer(opts.units_x, 1, 6)
+    local uy = integer(opts.units_y, 1, 6)
+    local hu = integer(opts.height_units, 1, 12)
+    local wall = clamp(opts.wall, 0.8, 4)
+    local floor_th = clamp(opts.floor_th, 0.8, 4)
+    local divider = clamp(opts.divider_th, 0.8, 4)
+    local ow, od = ux * GRID - XY_CLEARANCE, uy * GRID - XY_CLEARANCE
+    local body_top = math.max(hu * HEIGHT_UNIT, BASE_HEIGHT + floor_th + 2)
+    local body_h = body_top - BASE_HEIGHT
+    local max_columns = math.max(1, math.floor((ow - 2 * wall) / (2 * divider)))
+    local max_rows = math.max(1, math.floor((od - 2 * wall) / (2 * divider)))
+    local columns = integer(opts.columns, 1, math.min(20, max_columns))
+    local rows = integer(opts.rows, 1, math.min(20, max_rows))
+    local bin = shapes.builder()
 
-    local iw = clamp(opts.inner_width, 5, 300)
-    local id = clamp(opts.inner_depth, 5, 300)
-    local ih = clamp(opts.inner_height, 5, 300)
-    local ow, od = iw + 2 * wall, id + 2 * wall
-    local oh = ih + floor_th
+    -- One standard locating foot per occupied grid cell.
+    for gx = 0, ux - 1 do
+        for gy = 0, uy - 1 do
+            local cx, cy = gx * GRID + FOOT_TOP * 0.5, gy * GRID + FOOT_TOP * 0.5
+            add_profile(shapes, bin, cx, cy, 0, 0.8, FOOT_BOTTOM, FOOT_MIDDLE)
+            bin:add_slab(
+                shapes.rounded_slab(FOOT_MIDDLE, FOOT_MIDDLE, 1.8, FOOT_RADIUS),
+                {x = cx - FOOT_MIDDLE * 0.5, y = cy - FOOT_MIDDLE * 0.5, z = 0.8}
+            )
+            add_profile(shapes, bin, cx, cy, 2.6, BASE_HEIGHT - 2.6, FOOT_MIDDLE, FOOT_TOP)
+        end
+    end
 
-    -- The outer radius is what the user asked for; the cavity follows it inwards
-    -- so the wall keeps a constant thickness around the corner.
-    local outer_r = clamp(opts.corner_radius, 0, math.min(ow, od) * 0.5)
-    local inner_r = math.max(0, outer_r - wall)
-
-    local box = shapes.builder()
-
-    -- Shell, then cavity. Order matters: the Negative only cuts what precedes it.
-    box:add_slab(shapes.rounded_slab(ow, od, oh, outer_r))
-    box:add_slab(
-        shapes.rounded_slab(iw, id, ih + BREAK, inner_r),
-        { x = wall, y = wall, z = floor_th },
-        VolumeType.Negative
+    bin:add_slab(
+        shapes.rounded_slab(ow, od, body_h, FOOT_RADIUS),
+        {x = 0, y = 0, z = BASE_HEIGHT}
     )
 
-    -- A stacking groove: a pocket around the underside that the walls of the box
-    -- below drop into. There is no ring primitive and no boolean intersection, so
-    -- it is cut as a full pocket and the middle is put back as a later Solid.
-    if opts.stackable then
-        local depth = math.min(GROOVE_DEPTH, floor_th - 0.6)
-        local ring = wall + clearance
-        local island_w = ow - 2 * (GROOVE_INSET + ring)
-        local island_d = od - 2 * (GROOVE_INSET + ring)
-
-        if depth > 0.2 and island_w > 2 and island_d > 2 then
-            box:add_slab(
-                shapes.rounded_slab(ow - 2 * GROOVE_INSET, od - 2 * GROOVE_INSET,
-                                    depth + BREAK, math.max(0, outer_r - GROOVE_INSET)),
-                { x = GROOVE_INSET, y = GROOVE_INSET, z = -BREAK },
-                VolumeType.Negative
-            )
-            box:add_slab(
-                shapes.rounded_slab(island_w, island_d, depth,
-                                    math.max(0, outer_r - GROOVE_INSET - ring)),
-                { x = GROOVE_INSET + ring, y = GROOVE_INSET + ring, z = 0 }
+    -- Each compartment is its own negative pocket. The material between the
+    -- pockets is therefore a divider even after PrusaSlicer sorts volume types.
+    local usable_w = ow - 2 * wall - (columns - 1) * divider
+    local usable_d = od - 2 * wall - (rows - 1) * divider
+    local cell_w, cell_d = usable_w / columns, usable_d / rows
+    local cavity_z = BASE_HEIGHT + floor_th
+    local cavity_h = body_top - cavity_z
+    for col = 0, columns - 1 do
+        for row = 0, rows - 1 do
+            local x = wall + col * (cell_w + divider)
+            local y = wall + row * (cell_d + divider)
+            bin:add_slab(
+                shapes.rounded_slab(cell_w, cell_d, cavity_h,
+                                    math.min(2.8, cell_w * 0.25, cell_d * 0.25)),
+                {x = x, y = y, z = cavity_z}, VolumeType.Negative
             )
         end
     end
 
-    -- A half-round bite out of the top of the front wall, to get a finger in.
-    -- rotate{x = 90} turns the cylinder's axis from Z to -Y, so the body spans
-    -- y = [translate.y - length, translate.y] and its local Y extent becomes Z.
-    if opts.finger_notch then
-        local nr = math.min(10, iw * 0.3)
-        if nr > 1 and ih > nr * 0.5 then
-            local mesh = api.make_cylinder(nr, wall + 2 * BREAK)
-            local b = mesh:bounds()
-            box:add {
-                mesh = mesh,
-                type = VolumeType.Negative,
-                rotate = { x = 90 },
-                x = ow * 0.5 - (b.max_x - b.min_x) * 0.5 - b.min_x,
-                y = wall + BREAK,
-                z = oh - (b.max_y - b.min_y) * 0.5 - b.min_y
-            }
+    if opts.magnet_holes then
+        for gx = 0, ux - 1 do
+            for gy = 0, uy - 1 do
+                local cx, cy = gx * GRID + FOOT_TOP * 0.5, gy * GRID + FOOT_TOP * 0.5
+                for _, dx in ipairs({-MAGNET_OFFSET, MAGNET_OFFSET}) do
+                    for _, dy in ipairs({-MAGNET_OFFSET, MAGNET_OFFSET}) do
+                        local hole = shapes.cylinder_at(MAGNET_RADIUS, MAGNET_DEPTH + BREAK,
+                                                        cx + dx, cy + dy, -BREAK)
+                        hole.type = VolumeType.Negative
+                        bin:add(hole)
+                    end
+                end
+            end
         end
+    end
+
+    if opts.stacking_lip then
+        add_stacking_lip(bin, ow, od, ux, uy, body_top)
     end
 
     if opts.label ~= "" then
-        local size = math.max(3, math.min(8, oh * 0.3))
-        box:add_definition(labels.front_label {
+        bin:add_definition(labels.front_label {
             text = opts.label,
             center_x = ow * 0.5,
-            center_z = math.min(oh * 0.4, oh - size),
+            center_z = BASE_HEIGHT + body_h * 0.55,
             face_y = 0,
-            size = size
+            size = math.min(8, math.max(3, body_h * 0.25))
         })
     end
 
-    -- Dividers come after the cavity, so they survive it. Partial-height dividers
-    -- let you sweep the whole tray out in one go while still keeping things apart.
-    local dt = clamp(opts.divider_th, 0.4, math.min(10, iw, id))
-    local dh = ih * clamp(opts.divider_pct, 5, 100) / 100
-    -- Keep at least one divider thickness of usable space per compartment.
-    local max_columns = math.max(1, math.floor(iw / (2 * dt)))
-    local max_rows = math.max(1, math.floor(id / (2 * dt)))
-    local columns = integer(opts.columns, 1, math.min(20, max_columns))
-    local rows = integer(opts.rows, 1, math.min(20, max_rows))
-
-    for i = 1, columns - 1 do
-        box:add {
-            mesh = api.make_cube(dt, id, dh),
-            x = wall + iw * i / columns - dt * 0.5,
-            y = wall,
-            z = floor_th
-        }
-    end
-
-    for j = 1, rows - 1 do
-        box:add {
-            mesh = api.make_cube(iw, dt, dh),
-            x = wall,
-            y = wall + id * j / rows - dt * 0.5,
-            z = floor_th
-        }
-    end
-
-    box:emit({ x = 0, y = 0, z = 0 })
-
-    -- The lid is a shallow tray that slips over the box, generated open side up
-    -- so it prints without support in the orientation it arrives in.
-    if opts.with_lid then
-        local lw = ow + 2 * (clearance + wall)
-        local ld = od + 2 * (clearance + wall)
-        local lh = clamp(opts.lid_height, floor_th + 1, 50)
-        local lid_r = outer_r + wall + clearance
-
-        local lid = shapes.builder()
-        lid:add_slab(shapes.rounded_slab(lw, ld, lh, lid_r))
-        lid:add_slab(
-            shapes.rounded_slab(ow + 2 * clearance, od + 2 * clearance, lh, outer_r + clearance),
-            { x = wall, y = wall, z = floor_th },
-            VolumeType.Negative
-        )
-
-        -- On the front face, not the top: the lid is generated upside down, so
-        -- anything engraved into its top surface would come out mirrored once
-        -- the lid is turned over. A vertical face has no such handedness.
-        if opts.label ~= "" then
-            local size = math.max(3, math.min(8, lh * 0.4))
-            lid:add_definition(labels.front_label {
-                text = opts.label,
-                center_x = lw * 0.5,
-                center_z = lh * 0.5,
-                face_y = 0,
-                size = size
-            })
-        end
-
-        lid:emit({ x = 0, y = od + PART_GAP, z = 0 })
-    end
+    bin:emit({x = 0, y = 0, z = 0})
 end

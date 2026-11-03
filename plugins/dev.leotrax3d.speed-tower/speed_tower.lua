@@ -12,10 +12,10 @@ info = {
     menu = "Calibration/Speed Tower",
     params = {
         {name = "min_speed",     label = "Min Speed  [mm/s]",  type = "float", default = 30},
-        {name = "max_speed",     label = "Max Speed  [mm/s]",  type = "float", default = 150},
+        {name = "max_speed",     label = "Max Speed  [mm/s]",  type = "float", default = 180},
         {name = "steps",         label = "Num Steps",          type = "int",   default = 5},
         {name = "step_height",   label = "Step Height  [mm]",  type = "float", default = 8},
-        {name = "size",          label = "Tower Size  [mm]",   type = "float", default = 20},
+        {name = "size",          label = "Tower Size  [mm]",   type = "float", default = 60},
         {name = "enable_labels", label = "Engrave Labels",     type = "bool",  default = true}
     }
 }
@@ -45,7 +45,7 @@ function execute(opts)
 
     local steps = integer(opts.steps, 2, 20)
     local step_height = clamp(opts.step_height, 2, 30)
-    local size = clamp(opts.size, 10, 60)
+    local size = clamp(opts.size, 40, 120)
     local total_height = step_height * steps
 
     local bed = api.project:current_bed()
@@ -70,15 +70,15 @@ function execute(opts)
         material:set("cooling", 0)
         material:set("fan_always_on", 1)
         material:set("min_fan_speed", 100)
-
-        -- An uncapped volumetric limit matters just as much: with it in place
-        -- the fast bands would silently print slower than their labels claim.
-        material:set("filament_max_volumetric_speed", 0)
+        -- Prevent minimum-layer-time slowdown, but retain the configured
+        -- volumetric-flow safety limit. The preview may therefore show a lower
+        -- effective speed when the hot end, rather than motion, is the limit.
+        material:set("slowdown_below_layer_time", 0)
     end)
 
     local other_volumes = {}
     local min_speed = clamp(opts.min_speed, 5, 500)
-    local max_speed = clamp(opts.max_speed, 5, 500)
+    local max_speed = clamp(opts.max_speed, 5, 250)
     local speed_span = max_speed - min_speed
 
     for i = 1, steps do
@@ -93,6 +93,8 @@ function execute(opts)
             params = {
                 perimeter_speed = speed,
                 external_perimeter_speed = speed,
+                small_perimeter_speed = speed,
+                gap_fill_speed = speed,
                 infill_speed = speed,
                 solid_infill_speed = speed
             }
