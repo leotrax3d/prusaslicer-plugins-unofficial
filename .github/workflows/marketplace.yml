@@ -34,6 +34,38 @@ jobs:
           fi
 
           echo "dir=$dir" >> "$GITHUB_OUTPUT"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+
+      # The marketplace shows the release notes under each version, and that is
+      # the only long text a later release can still change (the catalogue
+      # description is fixed after the first release). So every release carries
+      # the plugin's description from docs/marketplace/, followed by the notes
+      # written on the GitHub release.
+      - name: Compose release notes
+        id: notes
+        shell: bash
+        env:
+          NAME: ${{ steps.bundle.outputs.name }}
+          RELEASE_BODY: ${{ github.event.release.body }}
+        run: |
+          description="docs/marketplace/$NAME.md"
+          {
+            if [ -f "$description" ]; then
+              cat "$description"
+            else
+              echo "::warning::No $description, publishing the release notes only" >&2
+            fi
+            if [ -n "$RELEASE_BODY" ]; then
+              printf '\n### Changes in this version\n\n%s\n' "$RELEASE_BODY"
+            fi
+          } > release-notes.md
+
+          delimiter="EOF_$(openssl rand -hex 8)"
+          {
+            echo "changelog<<$delimiter"
+            cat release-notes.md
+            echo "$delimiter"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Install Lua
         run: |
@@ -55,3 +87,4 @@ jobs:
         with:
           path: ${{ steps.bundle.outputs.dir }}
           private-key: ${{ secrets.PRUSA_SLICER_PLUGIN_MARKETPLACE_SIGNING_KEY }}
+          changelog: ${{ steps.notes.outputs.changelog }}

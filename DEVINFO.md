@@ -286,6 +286,13 @@ union and difference, and no mesh geometry access to build the intersection by h
 cannot be approximated either. The overlay ambigram in `com.leotrax3d.utilities` is the
 union-only alternative and is a different effect, not a substitute.
 
+**Mouse ears as a plugin**: a plugin cannot see existing objects, cannot write string
+settings such as `start_gcode` (`ConfigBox:set` only handles numbers, percentages and
+enums), and per-layer custom G-code is written verbatim, without variable expansion.
+`layer_gcode` skips the first layer. The working alternative is a start G-code snippet
+that reads `first_layer_print_min/max`:
+[`docs/snippets/mouse-ears.md`](docs/snippets/mouse-ears.md).
+
 Post-processing scripts remain the escape hatch for all of the above: any language, full
 system rights, no sandbox, configured under Print Settings → Post-processing scripts.
 
