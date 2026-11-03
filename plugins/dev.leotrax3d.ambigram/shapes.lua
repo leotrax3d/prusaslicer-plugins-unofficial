@@ -113,8 +113,8 @@ function Builder:add_slab(pieces, at, vtype)
 end
 
 --- Emits the collected volumes as a single object placed at `pos`.
--- The first volume carries the object; every other translate is expressed
--- relative to it, which keeps all the arithmetic above in one flat space.
+-- PrusaSlicer stores `translate` independently on every ModelVolume. The
+-- first volume's translation is not an object-level parent transform.
 function Builder:emit(pos, object_params)
     pos = pos or {}
     local first = self.volumes[1]
@@ -127,7 +127,11 @@ function Builder:emit(pos, object_params)
             type = v.type,
             rotate = v.rotate,
             params = v.params,
-            translate = { x = v.x - first.x, y = v.y - first.y, z = v.z - first.z }
+            translate = {
+                x = (pos.x or 0) + v.x,
+                y = (pos.y or 0) + v.y,
+                z = (pos.z or 0) + v.z
+            }
         }
     end
 

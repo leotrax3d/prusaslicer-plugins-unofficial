@@ -7,8 +7,8 @@
 -- origins are an open question in DEVINFO.md and the plugins position everything
 -- from Mesh:bounds() instead.
 --
--- world_boxes() replays the volume list the way the slicer would: `rotate` about
--- the volume's local origin, then `translate`, then the object's own translate.
+-- world_boxes() replays the volume list the way the slicer does: each volume
+-- has its own independent rotate/translate transform.
 package.path = "plugins/dev.leotrax3d.box-generator/?.lua;plugins/dev.leotrax3d.ambigram/?.lua;" .. package.path
 VolumeType = {Solid="Solid", Negative="Negative", Modifier="Modifier"}
 
@@ -40,7 +40,6 @@ api.project.add_object = function(self, o) objects[#objects+1] = o end
 
 -- world-space AABB of every volume of an object, by type
 function world_boxes(obj)
-    local t = obj.translate or {}
     local out = {}
     local function push(m, tr, ty, rot)
         local b = m:bounds()
@@ -54,11 +53,11 @@ function world_boxes(obj)
         end
         tr = tr or {}
         out[#out+1] = {tag=m.tag, type=ty or "Solid", rot=rot,
-            x0=x0+(tr.x or 0)+(t.x or 0), x1=x1+(tr.x or 0)+(t.x or 0),
-            y0=y0+(tr.y or 0)+(t.y or 0), y1=y1+(tr.y or 0)+(t.y or 0),
-            z0=z0+(tr.z or 0)+(t.z or 0), z1=z1+(tr.z or 0)+(t.z or 0)}
+            x0=x0+(tr.x or 0), x1=x1+(tr.x or 0),
+            y0=y0+(tr.y or 0), y1=y1+(tr.y or 0),
+            z0=z0+(tr.z or 0), z1=z1+(tr.z or 0)}
     end
-    push(obj.mesh, nil, "Solid", nil)
+    push(obj.mesh, obj.translate, "Solid", obj.rotate)
     for _,v in ipairs(obj.other_volumes or {}) do push(v.mesh, v.translate, v.type, v.rotate) end
     return out
 end

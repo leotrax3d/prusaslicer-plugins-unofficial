@@ -15,6 +15,19 @@ check("1U Gridfinity depth", solids.y1-solids.y0, 41.5)
 check("3U body plus stacking lip", solids.z1-solids.z0, 25.4)
 check("bin sits on bed", solids.z0, 0)
 
+-- Every low solid used by the Gridfinity base must remain inside the nominal
+-- footprint. This catches independently translated corner cylinders turning
+-- into puzzle-like tabs or notches.
+local escaped_base_volumes = 0
+for _, b in ipairs(boxes) do
+    if b.type == "Solid" and b.z0 < 4.75
+       and (b.x0 < -1e-6 or b.y0 < -1e-6
+            or b.x1 > 83.5 + 1e-6 or b.y1 > 41.5 + 1e-6) then
+        escaped_base_volumes = escaped_base_volumes + 1
+    end
+end
+check("base volumes stay inside footprint", escaped_base_volumes, 0)
+
 local cavity = extent(boxes, function(b)
     return b.type=="Negative" and b.z0 >= 5.9 and b.tag ~= "text:BITS"
 end)
