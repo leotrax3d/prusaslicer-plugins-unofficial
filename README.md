@@ -31,7 +31,12 @@ they need. Two bundles combine them for a single install: **Calibration Extras**
 (`dev.leotrax3d.calibration`: Fan Tower, Speed Tower, Tolerance Test) and **Utilities**
 (`dev.leotrax3d.utilities`: Gridfinity Bin). They are assembled from the
 individual plugins by `tools/build-bundles.sh`, so only `bundles/<id>/manifest.json` and
-`plugins.txt` live in the repository. Fan Tower and Speed Tower change print or filament settings in the current
+`plugins.txt` live in the repository.
+
+![Calibration Extras bundle](docs/marketplace/images/dev.leotrax3d.calibration.png)
+![Utilities bundle](docs/marketplace/images/dev.leotrax3d.utilities.png)
+
+Fan Tower and Speed Tower change print or filament settings in the current
 project and do not restore them, so run those two in a throwaway project. The other three
 plugins keep their changes on the generated objects.
 

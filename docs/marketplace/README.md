@@ -11,5 +11,6 @@ change is the release notes shown under each version.
 notes, followed by the body of the GitHub release under "Changes in this version". Write
 only what changed in the GitHub release; the description is added automatically.
 
-Images are untested. The publish API has no field for them, and whether the Marketplace
-renders Markdown images in release notes has not been tried.
+Checked on Calibration Extras 1.0.1: the Marketplace strips Markdown images (only the alt
+text remains) and does not render tables. Use headings, lists, bold and links only. The
+header graphics in `images/` are kept for the GitHub README and other pages.
