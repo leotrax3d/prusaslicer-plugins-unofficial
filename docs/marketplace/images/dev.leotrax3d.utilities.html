@@ -1,0 +1,105 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+  @font-face { font-family: JB; font-weight: 400; src: url("fonts/JetBrainsMono-Regular.ttf"); }
+  @font-face { font-family: JB; font-weight: 700; src: url("fonts/JetBrainsMono-Bold.ttf"); }
+  html, body { margin: 0; width: 1200px; height: 600px; overflow: hidden; background: #0d0e0f; }
+  body {
+    font-family: JB, monospace; color: #e8e6e0; position: relative;
+    background-image: radial-gradient(rgba(232,230,224,.16) 1px, transparent 1.3px);
+    background-size: 24px 24px; background-position: 12px 12px;
+  }
+  .frame { position: absolute; inset: 24px; border: 1px solid rgba(255,255,255,.07); border-radius: 12px; }
+  .top { position: absolute; left: 56px; right: 56px; top: 48px; display: flex; justify-content: space-between;
+         font-size: 13px; letter-spacing: .22em; color: #8b9096; text-transform: uppercase; }
+  .logo { color: #e8e6e0; font-weight: 700; letter-spacing: .08em; }
+  .logo b { color: #c5f13e; margin-right: 10px; }
+  .title { position: absolute; left: 56px; top: 132px; font-weight: 700; line-height: .98; letter-spacing: -.01em; }
+  .title div { font-size: 62px; }
+  .outline { color: transparent; -webkit-text-stroke: 1.2px rgba(232,230,224,.55); }
+  .lead { position: absolute; left: 56px; top: 310px; width: 400px; font-size: 16px; line-height: 1.75; color: #8b9096; }
+  .lead strong { color: #e8e6e0; font-weight: 700; }
+  .pill { position: absolute; left: 56px; bottom: 56px; display: flex; gap: 12px; }
+  .pill span { font-size: 12px; letter-spacing: .18em; padding: 10px 18px; border-radius: 999px;
+               border: 1px solid rgba(255,255,255,.13); color: #8b9096; }
+  .pill span.on { background: #c5f13e; color: #0d0e0f; border-color: #c5f13e; font-weight: 700; }
+  svg.spec { position: absolute; left: 520px; top: 108px; }
+</style></head>
+<body>
+  <div class="frame"></div>
+  <div class="top"><span class="logo"><b>&gt;_</b>LEOTRAX3D</span><span>Plugin bundle · 1.1.0</span></div>
+  <div class="title"><div>UTILITIES</div><div class="outline">GRIDFINITY</div></div>
+  <div class="lead">Parametric storage bins on a <strong>42 mm grid.</strong> Set the size, the pockets and the label. No CAD.</div>
+  <div class="pill"><span class="on">PRUSASLICER 3.0</span><span>GRIDFINITY BIN</span><span>MIT</span></div>
+
+  <svg class="spec" width="660" height="440" viewBox="0 0 660 440" font-family="JB, monospace">
+    <defs>
+      <style>
+        .ln { fill: none; stroke: #e8e6e0; stroke-opacity: .7; stroke-width: 1.2; }
+        .thin { fill: none; stroke: #e8e6e0; stroke-opacity: .35; stroke-width: 1; }
+        .dim { stroke: #8b9096; stroke-width: 1; fill: none; }
+        .lbl { fill: #8b9096; font-size: 11px; letter-spacing: .14em; }
+        .val { fill: #8b9096; font-size: 11px; }
+        .hitv { fill: #c5f13e; font-size: 11px; font-weight: 700; }
+        .idx { fill: #c5f13e; font-size: 12px; font-weight: 700; letter-spacing: .12em; }
+        .name { fill: #e8e6e0; font-size: 14px; font-weight: 700; letter-spacing: .1em; }
+      </style>
+    </defs>
+
+    <!-- A: top view, 2 x 1 bin with three pockets and magnet holes -->
+    <g transform="translate(20,40)">
+      <rect class="ln" x="0" y="4" width="336" height="168" rx="10"/>
+      <rect class="thin" x="10" y="14" width="316" height="148" rx="6"/>
+      <g fill="#c5f13e" fill-opacity=".9">
+        <rect x="20" y="24" width="90" height="128" rx="4"/>
+      </g>
+      <g class="ln">
+        <rect x="123" y="24" width="90" height="128" rx="4"/>
+        <rect x="226" y="24" width="90" height="128" rx="4"/>
+      </g>
+      <!-- 42 mm grid line between the two units -->
+      <line class="dim" x1="168" y1="-6" x2="168" y2="14" stroke-dasharray="3 4"/><line class="dim" x1="168" y1="162" x2="168" y2="182" stroke-dasharray="3 4"/>
+      <!-- dimensions -->
+      <g class="dim">
+        <line x1="0" y1="194" x2="336" y2="194"/>
+        <line x1="0" y1="188" x2="0" y2="200"/><line x1="168" y1="188" x2="168" y2="200"/><line x1="336" y1="188" x2="336" y2="200"/>
+        <line x1="352" y1="4" x2="352" y2="172"/>
+        <line x1="346" y1="4" x2="358" y2="4"/><line x1="346" y1="172" x2="358" y2="172"/>
+      </g>
+      <text class="val" x="84" y="214" text-anchor="middle">42</text>
+      <text class="val" x="252" y="214" text-anchor="middle">42</text>
+      <text class="val" x="362" y="92">42</text>
+      <text class="hitv" x="65" y="92" text-anchor="middle" fill="#0d0e0f" style="fill:#0d0e0f">01</text>
+      <text class="val" x="168" y="92" text-anchor="middle">02</text>
+      <text class="val" x="271" y="92" text-anchor="middle">03</text>
+      <text class="idx" x="0" y="262">A</text>
+      <text class="name" x="0" y="286">TOP VIEW</text>
+      <text class="lbl" x="0" y="306">2 × 1 UNITS · 3 POCKETS</text>
+    </g>
+
+    <!-- B: side profile, stacking lip, body in 7 mm units, locating foot -->
+    <g transform="translate(412,40)">
+      <path class="ln" d="M 14 4 L 18 4 L 18 12 L 22 16 L 22 140 L 18 144 L 18 150 L 10 158 L 10 172
+                          L 174 172 L 174 158 L 166 150 L 166 144 L 162 140 L 162 16 L 166 12 L 166 4 L 170 4"/>
+      <line class="thin" x1="22" y1="140" x2="162" y2="140"/>
+      <line class="thin" x1="22" y1="128" x2="162" y2="128"/>
+      <g class="dim">
+        <line x1="22" y1="44" x2="162" y2="44" stroke-dasharray="3 4"/>
+        <line x1="22" y1="84" x2="162" y2="84" stroke-dasharray="3 4"/>
+        <line x1="190" y1="4" x2="190" y2="172"/>
+        <line x1="184" y1="16" x2="196" y2="16"/><line x1="184" y1="44" x2="196" y2="44"/>
+        <line x1="184" y1="84" x2="196" y2="84"/><line x1="184" y1="124" x2="196" y2="124"/>
+        <line x1="184" y1="4" x2="196" y2="4"/><line x1="184" y1="172" x2="196" y2="172"/>
+      </g>
+      <text class="hitv" x="202" y="12">LIP</text>
+      <text class="val" x="202" y="34">7</text>
+      <text class="val" x="202" y="68">7</text>
+      <text class="val" x="202" y="108">7</text>
+      <text class="val" x="202" y="152">FOOT</text>
+      <rect x="10" y="158" width="164" height="14" fill="#c5f13e" fill-opacity=".9"/>
+      <text class="idx" x="0" y="262">B</text>
+      <text class="name" x="0" y="286">PROFILE</text>
+      <text class="lbl" x="0" y="306">7 MM UNITS · STACKS</text>
+    </g>
+  </svg>
+</body></html>

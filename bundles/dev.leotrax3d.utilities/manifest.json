@@ -1,11 +1,11 @@
 {
   "id": "dev.leotrax3d.utilities",
   "name": "Utilities",
-  "description": "Parametric generators: Gridfinity-compatible bins and overlay ambigrams",
+  "description": "Parametric generators: Gridfinity-compatible storage bins",
   "category": "Utilities",
   "license": "MIT",
   "min_slicer_version": "3.0.0-alpha13",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "7beaf341-c8c6-4b13-b5df-33bbb7c42953",
   "repo": "https://github.com/leotrax3d/prusaslicer-plugins-unofficial",
   "required_apis": { "project.plugin": "1.0.0" }

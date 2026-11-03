@@ -99,9 +99,9 @@ function execute(opts)
             mesh = modifier,
             type = VolumeType.Modifier,
             translate = {
-                x = -mb.min_x - object_translate.x,
-                y = -mb.min_y - object_translate.y,
-                z = band_z - mb.min_z - object_translate.z
+                x = -mb.min_x,
+                y = -mb.min_y,
+                z = band_z - mb.min_z
             },
             params = {
                 perimeter_speed = speed,
@@ -121,9 +121,6 @@ function execute(opts)
                 face_y = 0,
                 size = math.min(6, step_height * 0.6)
             }
-            label.translate.x = label.translate.x - object_translate.x
-            label.translate.y = label.translate.y - object_translate.y
-            label.translate.z = label.translate.z - object_translate.z
             table.insert(other_volumes, label)
         end
     end

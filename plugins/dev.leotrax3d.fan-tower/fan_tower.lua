@@ -113,9 +113,9 @@ function execute(opts)
     table.insert(other_volumes, {
         mesh = pillar,
         translate = {
-            x = size + PILLAR_GAP - pillar_bounds.min_x - object_translate.x,
-            y = (size - PILLAR_SIZE) * 0.5 - pillar_bounds.min_y - object_translate.y,
-            z = -pillar_bounds.min_z - object_translate.z
+            x = size + PILLAR_GAP - pillar_bounds.min_x,
+            y = (size - PILLAR_SIZE) * 0.5 - pillar_bounds.min_y,
+            z = -pillar_bounds.min_z
         }
     })
 
@@ -138,9 +138,6 @@ function execute(opts)
                 face_y = 0,
                 size = math.min(6, step_height * 0.6)
             }
-            label.translate.x = label.translate.x - object_translate.x
-            label.translate.y = label.translate.y - object_translate.y
-            label.translate.z = label.translate.z - object_translate.z
             table.insert(other_volumes, label)
         end
     end

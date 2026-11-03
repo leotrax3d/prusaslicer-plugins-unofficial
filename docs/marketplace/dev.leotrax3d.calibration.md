@@ -1,3 +1,5 @@
+![Calibration Extras](https://raw.githubusercontent.com/leotrax3d/prusaslicer-plugins-unofficial/main/docs/marketplace/images/dev.leotrax3d.calibration.png)
+
 Three calibration prints that PrusaSlicer does not ship, in one install. They complement the built-in Flow Tower and Temperature Tower.
 
 ### Included

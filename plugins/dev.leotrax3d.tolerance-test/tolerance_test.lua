@@ -89,58 +89,56 @@ function execute(opts)
         end
     end
 
+    -- Two pins make a damaged or locally over-extruded sample obvious. Each has
+    -- a conical lead-in at the top, so the first-layer bulge at its flat base is
+    -- never the edge used to start the fit test.
+    --
+    -- The pins are parts of the plate's object rather than objects of their
+    -- own: add_object centres every new object on the bed, so separate pin
+    -- objects would land on top of the plate.
+    local shaft_h = math.max(2, thickness * 2 - PIN_TIP)
+    local pin_cy = plate_d + PIN_GAP + pin_d * 0.5
+    for sample = 1, 2 do
+        local pin_cx = plate_w * 0.5 + (sample - 1.5) * (pin_d + 4)
+        local pin = api.make_cylinder(pin_d * 0.5, shaft_h)
+        local pb = pin:bounds()
+        local tip = api.make_cone(pin_d * 0.5, PIN_TIP)
+        local tb = tip:bounds()
+        table.insert(other_volumes, {
+            mesh = pin,
+            translate = {
+                x = pin_cx - (pb.min_x + pb.max_x) * 0.5,
+                y = pin_cy - (pb.min_y + pb.max_y) * 0.5,
+                z = -pb.min_z
+            }
+        })
+        table.insert(other_volumes, {
+            mesh = tip,
+            translate = {
+                x = pin_cx - (tb.min_x + tb.max_x) * 0.5,
+                y = pin_cy - (tb.min_y + tb.max_y) * 0.5,
+                z = shaft_h - tb.min_z
+            }
+        })
+    end
+
+    -- Every volume's translate is its own offset in object space; the first
+    -- volume is not a parent of the others. So the plate is moved to start at
+    -- the origin and everything else is already expressed in that frame.
     local plate = api.make_cube(plate_w, plate_d, thickness)
     local plate_bounds = plate:bounds()
-    local object_translate = {
-        x = -plate_bounds.min_x,
-        y = -plate_bounds.min_y,
-        z = -plate_bounds.min_z
-    }
-    for _, volume in ipairs(other_volumes) do
-        volume.translate.x = (volume.translate.x or 0) - object_translate.x
-        volume.translate.y = (volume.translate.y or 0) - object_translate.y
-        volume.translate.z = (volume.translate.z or 0) - object_translate.z
-    end
 
     api.project:add_object {
         mesh = plate,
-        translate = object_translate,
+        translate = {
+            x = -plate_bounds.min_x,
+            y = -plate_bounds.min_y,
+            z = -plate_bounds.min_z
+        },
         other_volumes = other_volumes,
         object_params = {
             fill_density = "100%",
             perimeters = 3
         }
     }
-
-    -- Two pins make a damaged or locally over-extruded sample obvious. Each has
-    -- a conical lead-in at the top, so the first-layer bulge at its flat base is
-    -- never the edge used to start the fit test.
-    for sample = 1, 2 do
-        local shaft_h = math.max(2, thickness * 2 - PIN_TIP)
-        local pin = api.make_cylinder(pin_d * 0.5, shaft_h)
-        local pb = pin:bounds()
-        local tip = api.make_cone(pin_d * 0.5, PIN_TIP)
-        local tb = tip:bounds()
-        local center_x = plate_w * 0.5 + (sample - 1.5) * (pin_d + 4)
-        api.project:add_object {
-            mesh = pin,
-            translate = {
-                x = center_x - (pb.min_x + pb.max_x) * 0.5,
-                y = plate_d + PIN_GAP - pb.min_y,
-                z = -pb.min_z
-            },
-            other_volumes = {{
-                mesh = tip,
-                translate = {
-                    x = -(tb.min_x + tb.max_x) * 0.5,
-                    y = -(tb.min_y + tb.max_y) * 0.5,
-                    z = shaft_h - tb.min_z
-                }
-            }},
-            object_params = {
-                fill_density = "100%",
-                perimeters = 3
-            }
-        }
-    end
 end
