@@ -32,8 +32,7 @@ function M.top_label(opts)
         translate = {
             x = opts.center_x - (b.max_x - b.min_x) * 0.5 - b.min_x,
             y = opts.center_y - (b.max_y - b.min_y) * 0.5 - b.min_y,
-            -- The body spans [z, z + depth]; it must meet the top face.
-            z = opts.top_z - depth
+            z = opts.top_z - b.max_z
         }
     }
 end
@@ -60,7 +59,7 @@ function M.front_label(opts)
         rotate = { x = 90 },
         translate = {
             x = opts.center_x - (b.max_x - b.min_x) * 0.5 - b.min_x,
-            y = opts.face_y + depth,
+            y = opts.face_y + b.max_z,
             z = opts.center_z - (b.max_y - b.min_y) * 0.5 - b.min_y
         }
     }

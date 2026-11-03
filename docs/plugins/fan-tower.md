@@ -1,6 +1,6 @@
 # Fan Tower
 
-**Menu:** Calibration → Fan Tower · **Bundle:** `dev.leotrax3d.calibration`
+**Menu:** Calibration → Fan Tower · **Plugin:** `dev.leotrax3d.fan-tower`
 
 Finds the right amount of part cooling for a filament by printing every fan speed in one
 object.
@@ -37,7 +37,8 @@ Take the lowest speed that still looks clean, not the highest speed that works.
 
 ## Settings it changes
 
-Applied to the current bed's presets when the plugin runs:
+Applied to the current bed's print preset and to every active material slot when the
+plugin runs:
 
 | Setting | Value | Why |
 | --- | --- | --- |

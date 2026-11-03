@@ -47,9 +47,9 @@ The simplest route. Each [release](https://github.com/leotrax3d/prusaslicer-plug
 carries a ready-made ZIP per bundle, built and layout-checked by CI, so there is nothing to
 package yourself.
 
-1. Download `dev.leotrax3d.calibration.zip` from the latest release.
+1. Download the desired plugin ZIP, for example `dev.leotrax3d.fan-tower.zip`.
 2. Unpack it into a directory named after the bundle id, inside the `lua` directory
-   described below — so `lua/dev.leotrax3d.calibration/manifest.json`, and so on.
+   described below — so `lua/dev.leotrax3d.fan-tower/manifest.json`, and so on.
 3. Restart the slicer.
 
 **Unpack it; do not use the slicer's ZIP import.** The release archives are not signed
@@ -64,7 +64,7 @@ developing.
 ## Installing a bundle manually
 
 1. Close PrusaSlicer. Plugins are discovered once at startup.
-2. Copy the whole bundle directory — for example `plugins/dev.leotrax3d.calibration` — into
+2. Copy the whole plugin directory — for example `plugins/dev.leotrax3d.fan-tower` — into
    the `lua` directory. Keep the directory name; it must match the `id` in
    `manifest.json`.
 3. Start PrusaSlicer.
@@ -74,7 +74,7 @@ The result should look like this:
 ```
 <data directory>/
 └── lua/
-    └── dev.leotrax3d.calibration/
+    └── dev.leotrax3d.fan-tower/
         ├── manifest.json
         ├── fan_tower.lua
         ├── labels.lua
@@ -91,7 +91,7 @@ a generated parameter dialog; confirming it builds the objects in the current pr
 ```bash
 git clone https://github.com/leotrax3d/prusaslicer-plugins-unofficial.git
 cd prusaslicer-plugins-unofficial
-cp -r plugins/dev.leotrax3d.calibration "<data directory>/lua/"
+cp -r plugins/dev.leotrax3d.fan-tower "<data directory>/lua/"
 ```
 
 Copy rather than symlink. Plugin file access is confined to the bundle's own directory,
@@ -99,14 +99,14 @@ and a symlinked bundle may not resolve inside that sandbox.
 
 ## Installing from a ZIP
 
-PrusaSlicer can also install a bundle from a ZIP archive. This is the format the future
-marketplace will distribute, and it is worth knowing one rule about it:
+PrusaSlicer can also install a plugin bundle from a ZIP archive. This is the format used
+by the Plugin Marketplace, and it is worth knowing one rule about it:
 
 **The archive must contain the bundle's files at its root, not the bundle directory.**
 
 The installer opens the archive and looks for the entry named exactly `manifest.json`. If
 you compress the folder itself, that entry is called
-`dev.leotrax3d.calibration/manifest.json`, no match is found, and the install fails with
+`dev.leotrax3d.fan-tower/manifest.json`, no match is found, and the install fails with
 `cannot load manifest.json`.
 
 Correct layout inside the archive:
@@ -122,8 +122,8 @@ tolerance_test.lua
 To build one by hand, compress the *contents* of the bundle directory:
 
 ```bash
-cd plugins/dev.leotrax3d.calibration
-zip ../../dev.leotrax3d.calibration.zip manifest.json *.lua
+cd plugins/dev.leotrax3d.fan-tower
+zip ../../dev.leotrax3d.fan-tower.zip manifest.json *.lua
 ```
 
 On Windows, select the files inside the folder and use Send to → Compressed folder.

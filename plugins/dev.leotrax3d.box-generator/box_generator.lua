@@ -9,7 +9,7 @@
 -- the slicer recomputing something per layer.
 
 info = {
-    id = "box_generator",
+    id = "dev.leotrax3d.box-generator",
     type = "project.plugin",
     title = "Box Generator",
     menu = "Generators/Parametric Box",
@@ -38,6 +38,15 @@ local GROOVE_INSET = 0.5 -- how far the stacking groove sits in from the outer f
 local GROOVE_DEPTH = 1.6 -- nominal groove depth, reduced if the floor is thin [mm]
 local BREAK = 1.0        -- overshoot so a cut passes cleanly through a face [mm]
 
+local function clamp(value, low, high)
+    return math.max(low, math.min(high, value))
+end
+
+
+local function integer(value, low, high)
+    return math.floor(clamp(value, low, high) + 0.5)
+end
+
 -- Required inside execute(): the scan pass that reads `info` runs each file in a
 -- bare Lua engine with neither `api` nor the slicer's custom require, so a
 -- top-level require would silently cost this plugin its menu entry.
@@ -45,17 +54,19 @@ function execute(opts)
     local shapes = require('shapes')
     local labels = require('labels')
 
-    local wall = math.max(0.4, opts.wall)
-    local floor_th = math.max(0.2, opts.floor_th)
-    local clearance = math.max(0, opts.clearance)
+    local wall = clamp(opts.wall, 0.6, 10)
+    local floor_th = clamp(opts.floor_th, 0.4, 10)
+    local clearance = clamp(opts.clearance, 0, 3)
 
-    local iw, id, ih = opts.inner_width, opts.inner_depth, opts.inner_height
+    local iw = clamp(opts.inner_width, 5, 300)
+    local id = clamp(opts.inner_depth, 5, 300)
+    local ih = clamp(opts.inner_height, 5, 300)
     local ow, od = iw + 2 * wall, id + 2 * wall
     local oh = ih + floor_th
 
     -- The outer radius is what the user asked for; the cavity follows it inwards
     -- so the wall keeps a constant thickness around the corner.
-    local outer_r = math.max(0, opts.corner_radius)
+    local outer_r = clamp(opts.corner_radius, 0, math.min(ow, od) * 0.5)
     local inner_r = math.max(0, outer_r - wall)
 
     local box = shapes.builder()
@@ -124,10 +135,13 @@ function execute(opts)
 
     -- Dividers come after the cavity, so they survive it. Partial-height dividers
     -- let you sweep the whole tray out in one go while still keeping things apart.
-    local dt = math.max(0.4, opts.divider_th)
-    local dh = ih * math.max(5, math.min(100, opts.divider_pct)) / 100
-    local columns = math.max(1, opts.columns)
-    local rows = math.max(1, opts.rows)
+    local dt = clamp(opts.divider_th, 0.4, math.min(10, iw, id))
+    local dh = ih * clamp(opts.divider_pct, 5, 100) / 100
+    -- Keep at least one divider thickness of usable space per compartment.
+    local max_columns = math.max(1, math.floor(iw / (2 * dt)))
+    local max_rows = math.max(1, math.floor(id / (2 * dt)))
+    local columns = integer(opts.columns, 1, math.min(20, max_columns))
+    local rows = integer(opts.rows, 1, math.min(20, max_rows))
 
     for i = 1, columns - 1 do
         box:add {
@@ -154,7 +168,7 @@ function execute(opts)
     if opts.with_lid then
         local lw = ow + 2 * (clearance + wall)
         local ld = od + 2 * (clearance + wall)
-        local lh = math.max(floor_th + 1, opts.lid_height)
+        local lh = clamp(opts.lid_height, floor_th + 1, 50)
         local lid_r = outer_r + wall + clearance
 
         local lid = shapes.builder()
@@ -166,8 +180,8 @@ function execute(opts)
         )
 
         -- On the front face, not the top: the lid is generated upside down, so
-        -- anything engraved into its top surface would come out mirrored once the
-        -- lid is turned over. A vertical face has no such handedness.
+        -- anything engraved into its top surface would come out mirrored once
+        -- the lid is turned over. A vertical face has no such handedness.
         if opts.label ~= "" then
             local size = math.max(3, math.min(8, lh * 0.4))
             lid:add_definition(labels.front_label {

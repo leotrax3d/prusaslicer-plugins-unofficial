@@ -1,6 +1,6 @@
 # Speed Tower
 
-**Menu:** Calibration → Speed Tower · **Bundle:** `dev.leotrax3d.calibration`
+**Menu:** Calibration → Speed Tower · **Plugin:** `dev.leotrax3d.speed-tower`
 
 Finds the highest print speed a printer holds without visible quality loss.
 
@@ -38,6 +38,9 @@ Bear in mind this measures *your machine*, not the filament: frame rigidity and
 acceleration limits usually decide the outcome before the hot end does.
 
 ## Settings it changes
+
+Print settings are applied to the current bed; cooling and volumetric settings are
+applied to every active material slot.
 
 | Setting | Value | Why |
 | --- | --- | --- |

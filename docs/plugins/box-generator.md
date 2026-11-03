@@ -1,6 +1,6 @@
 # Box Generator
 
-**Bundle:** `dev.leotrax3d.utilities` · **Menu:** Generators → Parametric Box
+**Plugin:** `dev.leotrax3d.box-generator` · **Menu:** Generators → Parametric Box
 
 Builds a storage box, drawer insert or organiser tray, optionally with a lid, compartment
 dividers, a stacking groove and an engraved label. Pure geometry: it changes no slicer

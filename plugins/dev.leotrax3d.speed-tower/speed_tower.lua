@@ -6,7 +6,7 @@
 -- Flow Tower uses.
 
 info = {
-    id = "speed_tower",
+    id = "dev.leotrax3d.speed-tower",
     type = "project.plugin",
     title = "Speed Tower",
     menu = "Calibration/Speed Tower",
@@ -20,6 +20,22 @@ info = {
     }
 }
 
+local function clamp(value, low, high)
+    return math.max(low, math.min(high, value))
+end
+
+local function integer(value, low, high)
+    return math.floor(clamp(value, low, high) + 0.5)
+end
+
+local function for_each_material(bed, fn)
+    for slot = 0, 15 do
+        local ok, material = pcall(function() return bed:material_presets(slot) end)
+        if not ok then break end
+        fn(material)
+    end
+end
+
 -- Modules are required inside execute() rather than at file level: the scan that
 -- collects `info` runs each file in a bare Lua engine that has neither `api` nor
 -- the custom `require`, so a top-level require aborts the file and the plugin
@@ -27,9 +43,9 @@ info = {
 function execute(opts)
     local labels = require('labels')
 
-    local steps = math.max(2, opts.steps)
-    local step_height = opts.step_height
-    local size = opts.size
+    local steps = integer(opts.steps, 2, 20)
+    local step_height = clamp(opts.step_height, 2, 30)
+    local size = clamp(opts.size, 10, 60)
     local total_height = step_height * steps
 
     local bed = api.project:current_bed()
@@ -40,6 +56,8 @@ function execute(opts)
     bed:print_presets():set("perimeters", 2)
     bed:print_presets():set("top_solid_layers", 0)
     bed:print_presets():set("bottom_solid_layers", 3)
+    bed:print_presets():set("brim_type", "outer_only")
+    bed:print_presets():set("brim_width", 5)
 
     -- Stop the slicer from quietly undoing the test.
     --
@@ -48,20 +66,24 @@ function execute(opts)
     -- the same speed. Disabling auto cooling removes that, while
     -- fan_always_on with a fixed speed keeps cooling constant so it does not
     -- confound the comparison.
-    bed:material_presets(0):set("cooling", 0)
-    bed:material_presets(0):set("fan_always_on", 1)
-    bed:material_presets(0):set("min_fan_speed", 100)
+    for_each_material(bed, function(material)
+        material:set("cooling", 0)
+        material:set("fan_always_on", 1)
+        material:set("min_fan_speed", 100)
 
-    -- An uncapped volumetric limit matters just as much: with it in place the
-    -- fast bands would silently print slower than their label claims.
-    bed:material_presets(0):set("filament_max_volumetric_speed", 0)
+        -- An uncapped volumetric limit matters just as much: with it in place
+        -- the fast bands would silently print slower than their labels claim.
+        material:set("filament_max_volumetric_speed", 0)
+    end)
 
     local other_volumes = {}
-    local speed_span = opts.max_speed - opts.min_speed
+    local min_speed = clamp(opts.min_speed, 5, 500)
+    local max_speed = clamp(opts.max_speed, 5, 500)
+    local speed_span = max_speed - min_speed
 
     for i = 1, steps do
         local band_z = step_height * (i - 1)
-        local speed = opts.min_speed + speed_span * (i - 1) / (steps - 1)
+        local speed = min_speed + speed_span * (i - 1) / (steps - 1)
 
         -- The modifier covers exactly one height band and sets the speeds there.
         table.insert(other_volumes, {

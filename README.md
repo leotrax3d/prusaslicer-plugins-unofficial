@@ -26,10 +26,10 @@ and which slicer settings it changes.
 | **[Box Generator](docs/plugins/box-generator.md)** | Storage boxes, drawer inserts and organiser trays, specified by the space you need *inside* them. Lid, compartment dividers, stacking groove, finger notch and engraved label. | Generators → Parametric Box |
 | **[Ambigram](docs/plugins/ambigram.md)** | A word overlaid with its own 180° rotation, or with a second word, so the plate reads both ways round. | Generators → Ambigram |
 
-Two bundles. The three calibration plugins in `dev.leotrax3d.calibration` change print or
-filament settings in the project they create and do not restore them, so run those in a
-throwaway project. The generators in `dev.leotrax3d.utilities` are pure geometry and change
-nothing.
+Each function is an independent Marketplace plugin, so users install and update only what
+they need. Fan Tower and Speed Tower change print or filament settings in the current
+project and do not restore them, so run those two in a throwaway project. The other three
+plugins keep their changes on the generated objects.
 
 ## Installation
 

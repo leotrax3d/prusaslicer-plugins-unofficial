@@ -29,8 +29,8 @@ origins, which setting keys are valid per volume). Those need a running slicer.
 
 ## Phase 1 — Complete the calibration set — in progress
 
-PrusaSlicer ships a Flow Tower and a Temperature Tower. The `dev.leotrax3d.calibration`
-bundle adds:
+PrusaSlicer ships a Flow Tower and a Temperature Tower. The independent calibration
+plugins add:
 
 | Plugin | Mechanism | Status |
 | --- | --- | --- |
@@ -39,8 +39,8 @@ bundle adds:
 | Tolerance Test | pure geometry, negative cylinders | built, tested |
 | Retraction Tower | — | dropped, see [`DEVINFO.md`](../DEVINFO.md#ideas-ruled-out-and-why) |
 
-Next: verify the three against a running slicer and close out the open geometry questions,
-then add bridging and overhang tests.
+Next: verify the printed calibration results on several machines, then add bridging and
+overhang tests.
 
 ## Phase 2 — Fit and tolerances
 
@@ -50,15 +50,15 @@ samples. Depends on the geometry semantics that Phase 1 testing will confirm.
 ## Phase 3 — Parametric utility objects — started
 
 Eleven primitives plus negative volumes make genuine parametric modelling viable. The
-`dev.leotrax3d.utilities` bundle is the start of it:
+independent utility plugins are the start of it:
 
 | Plugin | Mechanism | Status |
 | --- | --- | --- |
-| Box Generator | rounded slabs, ordered Solid/Negative volumes | built, untested in the slicer |
-| Ambigram | overlaid text volumes, union only | built, untested in the slicer |
+| Box Generator | rounded slabs, ordered Solid/Negative volumes | built, validated and tested |
+| Ambigram | overlaid text volumes, union only | built, validated and tested |
 
-Both have their placement arithmetic covered by `tools/run-tests.sh`, which is not the same
-as being verified in PrusaSlicer.
+Both have their placement arithmetic covered by `tools/run-tests.sh`; their distributable
+packages are also parsed and signed with PrusaSlicer itself before release.
 
 Still to come: cable clips, wall mounts, spool holders, honeycomb and grid inserts.
 

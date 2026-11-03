@@ -8,14 +8,14 @@
 -- Pure geometry: no G-code tricks and no setting changes mid-print.
 
 info = {
-    id = "tolerance_test",
+    id = "dev.leotrax3d.tolerance-test",
     type = "project.plugin",
     title = "Tolerance Test",
     menu = "Calibration/Tolerance Test",
     params = {
         {name = "pin_diameter",  label = "Pin Diameter  [mm]",  type = "float", default = 6},
-        {name = "min_clearance", label = "Min Clearance  [mm]", type = "float", default = 0.0},
-        {name = "max_clearance", label = "Max Clearance  [mm]", type = "float", default = 0.5},
+        {name = "min_clearance", label = "Min Diameter Clearance [mm]", type = "float", default = 0.0},
+        {name = "max_clearance", label = "Max Diameter Clearance [mm]", type = "float", default = 0.5},
         {name = "steps",         label = "Num Steps",           type = "int",   default = 6},
         {name = "thickness",     label = "Plate Thickness [mm]",type = "float", default = 6},
         {name = "enable_labels", label = "Engrave Labels",      type = "bool",  default = true}
@@ -26,6 +26,14 @@ local MARGIN = 4.0      -- material margin around the holes [mm]
 local LABEL_ROW = 6.0   -- depth of the label strip in front of the holes [mm]
 local PIN_GAP = 10.0    -- gap between the test pin and the plate [mm]
 
+local function clamp(value, low, high)
+    return math.max(low, math.min(high, value))
+end
+
+local function integer(value, low, high)
+    return math.floor(clamp(value, low, high) + 0.5)
+end
+
 -- Modules are required inside execute() rather than at file level: the scan that
 -- collects `info` runs each file in a bare Lua engine that has neither `api` nor
 -- the custom `require`, so a top-level require aborts the file and the plugin
@@ -33,27 +41,24 @@ local PIN_GAP = 10.0    -- gap between the test pin and the plate [mm]
 function execute(opts)
     local labels = require('labels')
 
-    local steps = math.max(2, opts.steps)
-    local pin_d = opts.pin_diameter
-    local thickness = opts.thickness
+    local steps = integer(opts.steps, 2, 12)
+    local pin_d = clamp(opts.pin_diameter, 2, 30)
+    local thickness = clamp(opts.thickness, 2, 20)
+    local clearance_a = clamp(opts.min_clearance, 0, 3)
+    local clearance_b = clamp(opts.max_clearance, 0, 3)
+    local min_clearance = math.min(clearance_a, clearance_b)
+    local max_clearance = math.max(clearance_a, clearance_b)
 
-    local pitch = pin_d + opts.max_clearance + MARGIN
+    local pitch = pin_d + max_clearance + MARGIN
     local plate_w = pitch * steps
-    local plate_d = pin_d + opts.max_clearance + MARGIN * 2 + LABEL_ROW
+    local plate_d = pin_d + max_clearance + MARGIN * 2 + LABEL_ROW
     local hole_cy = LABEL_ROW + (plate_d - LABEL_ROW) * 0.5
 
-    local bed = api.project:current_bed()
-
-    -- Print solid: for a fit test the hole wall must not flex, otherwise you
-    -- measure infill density rather than tolerance.
-    bed:print_presets():set("fill_density", "100%")
-    bed:print_presets():set("perimeters", 3)
-
     local other_volumes = {}
-    local clearance_span = opts.max_clearance - opts.min_clearance
+    local clearance_span = max_clearance - min_clearance
 
     for i = 1, steps do
-        local clearance = opts.min_clearance + clearance_span * (i - 1) / (steps - 1)
+        local clearance = min_clearance + clearance_span * (i - 1) / (steps - 1)
         local hole_cx = pitch * (i - 0.5)
 
         -- Position from the mesh's own bounds rather than assuming where
@@ -87,7 +92,8 @@ function execute(opts)
         mesh = api.make_cube(plate_w, plate_d, thickness),
         other_volumes = other_volumes,
         object_params = {
-            fill_density = "100%"
+            fill_density = "100%",
+            perimeters = 3
         }
     }
 
@@ -104,7 +110,8 @@ function execute(opts)
             z = -pb.min_z
         },
         object_params = {
-            fill_density = "100%"
+            fill_density = "100%",
+            perimeters = 3
         }
     }
 end

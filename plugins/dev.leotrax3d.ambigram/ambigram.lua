@@ -21,7 +21,7 @@
 -- tangle. Try a few fonts -- it costs one dialog.
 
 info = {
-    id = "ambigram",
+    id = "dev.leotrax3d.ambigram",
     type = "project.plugin",
     title = "Ambigram",
     menu = "Generators/Ambigram",
@@ -43,6 +43,10 @@ local KEYRING_R = 2.5    -- hole radius, sized for a split ring [mm]
 local KEYRING_WEB = 2.5  -- material left around the hole [mm]
 local BREAK = 1.0        -- overshoot so the hole passes cleanly through [mm]
 
+local function clamp(value, low, high)
+    return math.max(low, math.min(high, value))
+end
+
 function execute(opts)
     local shapes = require('shapes')
 
@@ -54,8 +58,9 @@ function execute(opts)
         if ok and requested then font = requested end
     end
 
-    local depth = math.max(0.4, opts.text_depth)
-    local size = math.max(2, opts.text_size)
+    local depth = clamp(opts.text_depth, 0.4, 20)
+    local size = clamp(opts.text_size, 2, 100)
+    local text_a = opts.text_a ~= "" and opts.text_a or "Ambigram"
 
     local function emboss(text)
         return api.emboss_text {
@@ -66,8 +71,8 @@ function execute(opts)
         }
     end
 
-    local text_b = opts.text_b ~= "" and opts.text_b or opts.text_a
-    local mesh_a, mesh_b = emboss(opts.text_a), emboss(text_b)
+    local text_b = opts.text_b ~= "" and opts.text_b or text_a
+    local mesh_a, mesh_b = emboss(text_a), emboss(text_b)
     local ba, bb = mesh_a:bounds(), mesh_b:bounds()
 
     -- Both readings are centred on the origin, which is what makes them overlay:
@@ -75,13 +80,16 @@ function execute(opts)
     local span_x = math.max(ba.max_x - ba.min_x, bb.max_x - bb.min_x)
     local span_y = math.max(ba.max_y - ba.min_y, bb.max_y - bb.min_y)
 
-    local margin = math.max(0, opts.plate_margin)
-    local plate_th = opts.base_plate and math.max(0.2, opts.plate_th) or 0
+    local margin = clamp(opts.plate_margin, 0, 50)
+    -- A keyring hole needs material around it, so requesting a keyring implies
+    -- a plate even if Base Plate was accidentally unchecked.
+    local base_plate = opts.base_plate or opts.keyring
+    local plate_th = base_plate and clamp(opts.plate_th, 0.4, 20) or 0
     local tab = opts.keyring and (2 * KEYRING_R + 2 * KEYRING_WEB) or 0
 
     local art = shapes.builder()
 
-    if opts.base_plate then
+    if base_plate then
         local pw = span_x + 2 * margin + tab
         local pd = span_y + 2 * margin
         -- The keyring tab is added on the left, so the text stays centred on the

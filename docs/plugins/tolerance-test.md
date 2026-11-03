@@ -1,6 +1,6 @@
 # Tolerance Test
 
-**Menu:** Calibration → Tolerance Test · **Bundle:** `dev.leotrax3d.calibration`
+**Menu:** Calibration → Tolerance Test · **Plugin:** `dev.leotrax3d.tolerance-test`
 
 Determines the clearance your parts need to fit together, for this printer and this
 filament.
@@ -20,13 +20,13 @@ Pure geometry — no G-code tricks and no settings changing mid-print.
 | Parameter | Default | Meaning |
 | --- | --- | --- |
 | Pin Diameter [mm] | 6 | Nominal diameter; the pin is printed at exactly this |
-| Min Clearance [mm] | 0.0 | Added to the first hole |
-| Max Clearance [mm] | 0.5 | Added to the last hole |
+| Min Diameter Clearance [mm] | 0.0 | Added to the first hole's diameter |
+| Max Diameter Clearance [mm] | 0.5 | Added to the last hole's diameter |
 | Num Steps | 6 | Number of holes; minimum 2 |
 | Plate Thickness [mm] | 6 | Also sets the pin length, at twice this |
 | Engrave Labels | on | Engrave each clearance onto the top surface |
 
-Hole diameter is `Pin Diameter + clearance`, stepped linearly across the row. The plate
+Hole diameter is `Pin Diameter + diameter clearance`, stepped linearly across the row. The plate
 sizes itself from these values, so there is no layout to get wrong.
 
 ## How to read the result
@@ -39,8 +39,8 @@ The first hole the pin enters without force is your clearance. Two things worth 
 - **It is filament-specific.** PETG and ABS behave differently from PLA, and a change of
   nozzle temperature moves the answer. Rerun it when you change material.
 
-Clearance in the hole is only half of a real fit: the mating part has its own error. For a
-peg you design yourself, expect to split the measured clearance between the two.
+The engraved value is diametral clearance, not clearance per side. If you distribute the
+allowance equally between a hole and a peg, apply half of it to each radius.
 
 ## Settings it changes
 
@@ -48,6 +48,9 @@ peg you design yourself, expect to split the measured clearance between the two.
 | --- | --- | --- |
 | `fill_density` | 100% | A hole wall that flexes would measure infill density, not tolerance |
 | `perimeters` | 3 | As above |
+
+These settings are attached only to the generated plate and pin objects; the plugin does
+not change the current print or filament preset.
 
 ## Implementation note
 

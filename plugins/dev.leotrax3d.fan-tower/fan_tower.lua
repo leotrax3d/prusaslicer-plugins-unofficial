@@ -6,7 +6,7 @@
 -- where insufficient cooling shows up first.
 
 info = {
-    id = "fan_tower",
+    id = "dev.leotrax3d.fan-tower",
     type = "project.plugin",
     title = "Fan Tower",
     menu = "Calibration/Fan Tower",
@@ -23,9 +23,28 @@ info = {
 local PILLAR_SIZE = 6.0  -- edge length of the cooling test pillar [mm]
 local PILLAR_GAP  = 15.0 -- gap between tower and pillar [mm]
 
+local function clamp(value, low, high)
+    return math.max(low, math.min(high, value))
+end
+
+local function integer(value, low, high)
+    return math.floor(clamp(value, low, high) + 0.5)
+end
+
+-- Material slots are zero-based and the API exposes no slot count. Probe until
+-- the first missing slot so multi-material projects do not keep automatic fan
+-- control enabled on all but the first filament.
+local function for_each_material(bed, fn)
+    for slot = 0, 15 do
+        local ok, material = pcall(function() return bed:material_presets(slot) end)
+        if not ok then break end
+        fn(material)
+    end
+end
+
 --- Translates a fan percentage into a G-code command.
 local function fan_gcode(percent)
-    local pwm = math.floor(percent * 255 / 100 + 0.5)
+    local pwm = math.floor(clamp(percent, 0, 100) * 255 / 100 + 0.5)
     if pwm <= 0 then
         return "M107"
     end
@@ -42,9 +61,9 @@ end
 function execute(opts)
     local labels = require('labels')
 
-    local steps = math.max(2, opts.steps)
-    local step_height = opts.step_height
-    local size = opts.size
+    local steps = integer(opts.steps, 2, 20)
+    local step_height = clamp(opts.step_height, 2, 30)
+    local size = clamp(opts.size, 10, 60)
     local total_height = step_height * steps
 
     local bed = api.project:current_bed()
@@ -74,10 +93,12 @@ function execute(opts)
     -- With auto cooling off and fan_always_on off, its computed speed stays 0
     -- for every layer, so after the initial M107 it never emits again and the
     -- custom G-code is authoritative.
-    bed:material_presets(0):set("cooling", 0)
-    bed:material_presets(0):set("fan_always_on", 0)
-    bed:material_presets(0):set("full_fan_speed_layer", 0)
-    bed:material_presets(0):set("disable_fan_first_layers", 1)
+    for_each_material(bed, function(material)
+        material:set("cooling", 0)
+        material:set("fan_always_on", 0)
+        material:set("full_fan_speed_layer", 0)
+        material:set("disable_fan_first_layers", 1)
+    end)
 
     local other_volumes = {}
 
@@ -90,11 +111,13 @@ function execute(opts)
         }
     })
 
-    local fan_span = opts.max_fan - opts.min_fan
+    local min_fan = clamp(opts.min_fan, 0, 100)
+    local max_fan = clamp(opts.max_fan, 0, 100)
+    local fan_span = max_fan - min_fan
 
     for i = 1, steps do
         local band_z = step_height * (i - 1)
-        local fan = opts.min_fan + fan_span * (i - 1) / (steps - 1)
+        local fan = min_fan + fan_span * (i - 1) / (steps - 1)
         local rounded_fan = math.floor(fan + 0.5)
 
         -- Switch one layer above the band start, so the change does not land in
