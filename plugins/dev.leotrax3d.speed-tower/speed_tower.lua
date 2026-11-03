@@ -49,6 +49,13 @@ function execute(opts)
     local total_height = step_height * steps
 
     local bed = api.project:current_bed()
+    local tower_mesh = api.make_cube(size, size, total_height)
+    local tower_bounds = tower_mesh:bounds()
+    local object_translate = {
+        x = -tower_bounds.min_x,
+        y = -tower_bounds.min_y,
+        z = -tower_bounds.min_z
+    }
 
     -- Few perimeters and an open interior, so speed determines the result rather
     -- than the perimeter count.
@@ -86,10 +93,16 @@ function execute(opts)
         local speed = min_speed + speed_span * (i - 1) / (steps - 1)
 
         -- The modifier covers exactly one height band and sets the speeds there.
+        local modifier = api.make_cube(size, size, step_height)
+        local mb = modifier:bounds()
         table.insert(other_volumes, {
-            mesh = api.make_cube(size, size, step_height),
+            mesh = modifier,
             type = VolumeType.Modifier,
-            translate = { z = band_z },
+            translate = {
+                x = -mb.min_x - object_translate.x,
+                y = -mb.min_y - object_translate.y,
+                z = band_z - mb.min_z - object_translate.z
+            },
             params = {
                 perimeter_speed = speed,
                 external_perimeter_speed = speed,
@@ -101,18 +114,23 @@ function execute(opts)
         })
 
         if opts.enable_labels then
-            table.insert(other_volumes, labels.front_label {
+            local label = labels.front_label {
                 text = labels.fmt(speed, 0),
                 center_x = size * 0.5,
                 center_z = band_z + step_height * 0.5,
                 face_y = 0,
                 size = math.min(6, step_height * 0.6)
-            })
+            }
+            label.translate.x = label.translate.x - object_translate.x
+            label.translate.y = label.translate.y - object_translate.y
+            label.translate.z = label.translate.z - object_translate.z
+            table.insert(other_volumes, label)
         end
     end
 
     api.project:add_object {
-        mesh = api.make_cube(size, size, total_height),
+        mesh = tower_mesh,
+        translate = object_translate,
         other_volumes = other_volumes,
         object_params = {
             fill_density = "0%"

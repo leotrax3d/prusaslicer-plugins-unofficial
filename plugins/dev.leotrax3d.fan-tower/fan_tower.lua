@@ -68,6 +68,13 @@ function execute(opts)
 
     local bed = api.project:current_bed()
     local layer_height = bed:print_presets():value("layer_height")
+    local tower_mesh = api.make_cube(size, size, total_height)
+    local tower_bounds = tower_mesh:bounds()
+    local object_translate = {
+        x = -tower_bounds.min_x,
+        y = -tower_bounds.min_y,
+        z = -tower_bounds.min_z
+    }
 
     -- Thin walls and light infill, so cooling drives the result rather than
     -- wall thickness masking it.
@@ -101,11 +108,14 @@ function execute(opts)
     local other_volumes = {}
 
     -- The cooling test pillar, as a second volume of the same object.
+    local pillar = api.make_cube(PILLAR_SIZE, PILLAR_SIZE, total_height)
+    local pillar_bounds = pillar:bounds()
     table.insert(other_volumes, {
-        mesh = api.make_cube(PILLAR_SIZE, PILLAR_SIZE, total_height),
+        mesh = pillar,
         translate = {
-            x = size + PILLAR_GAP,
-            y = (size - PILLAR_SIZE) * 0.5
+            x = size + PILLAR_GAP - pillar_bounds.min_x - object_translate.x,
+            y = (size - PILLAR_SIZE) * 0.5 - pillar_bounds.min_y - object_translate.y,
+            z = -pillar_bounds.min_z - object_translate.z
         }
     })
 
@@ -121,13 +131,17 @@ function execute(opts)
         band_fans[i] = rounded_fan
 
         if opts.enable_labels then
-            table.insert(other_volumes, labels.front_label {
+            local label = labels.front_label {
                 text = rounded_fan,
                 center_x = size * 0.5,
                 center_z = band_z + step_height * 0.5,
                 face_y = 0,
                 size = math.min(6, step_height * 0.6)
-            })
+            }
+            label.translate.x = label.translate.x - object_translate.x
+            label.translate.y = label.translate.y - object_translate.y
+            label.translate.z = label.translate.z - object_translate.z
+            table.insert(other_volumes, label)
         end
     end
 
@@ -145,7 +159,8 @@ function execute(opts)
     end
 
     api.project:add_object {
-        mesh = api.make_cube(size, size, total_height),
+        mesh = tower_mesh,
+        translate = object_translate,
         other_volumes = other_volumes,
         object_params = {
             fill_density = "10%"

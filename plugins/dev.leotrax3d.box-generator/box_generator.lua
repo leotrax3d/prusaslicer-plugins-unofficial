@@ -26,6 +26,7 @@ local GRID, XY_CLEARANCE, HEIGHT_UNIT = 42.0, 0.5, 7.0
 local BASE_HEIGHT = 4.75
 local FOOT_BOTTOM, FOOT_MIDDLE, FOOT_TOP = 35.6, 37.2, 41.5
 local FOOT_RADIUS, LIP_HEIGHT = 3.75, 4.4
+local LIP_LOWER, LIP_VERTICAL, LIP_UPPER = 0.7, 1.8, 1.9
 local MAGNET_RADIUS, MAGNET_DEPTH, MAGNET_OFFSET = 3.25, 2.4, 13.0
 local BREAK, PROFILE_STEP = 0.2, 0.2
 
@@ -49,28 +50,33 @@ local function add_profile(shapes, builder, cx, cy, z0, h, from_size, to_size)
     end
 end
 
-local function foot_size_at(z)
-    if z <= 0.8 then
-        return FOOT_BOTTOM + (FOOT_MIDDLE - FOOT_BOTTOM) * z / 0.8
-    elseif z <= 2.6 then
-        return FOOT_MIDDLE
+local function lip_opening_at(z)
+    local size
+    if z <= LIP_LOWER then
+        size = FOOT_BOTTOM + 2 * z
+    elseif z <= LIP_LOWER + LIP_VERTICAL then
+        size = FOOT_BOTTOM + 2 * LIP_LOWER
+    else
+        size = FOOT_BOTTOM + 2 * LIP_LOWER
+             + 2 * math.min(LIP_UPPER, z - LIP_LOWER - LIP_VERTICAL)
     end
-    return FOOT_MIDDLE + (FOOT_TOP - FOOT_MIDDLE) * (z - 2.6) / (BASE_HEIGHT - 2.6)
+    -- Published stacking profile calls for 0.25 mm offset per side.
+    return size + XY_CLEARANCE
 end
 
-local function add_stacking_lip(builder, outer_w, outer_d, ux, uy, z0)
+local function add_stacking_lip(shapes, builder, outer_w, outer_d, ux, uy, z0)
     local count = math.ceil(LIP_HEIGHT / PROFILE_STEP)
     local step_h = LIP_HEIGHT / count
     for step = 1, count do
         local z = (step - 1) * step_h
-        local profile = foot_size_at(math.min(BASE_HEIGHT, z + step_h))
-        local inner_w = math.min(outer_w - 0.2, (ux - 1) * GRID + profile + XY_CLEARANCE)
-        local inner_d = math.min(outer_d - 0.2, (uy - 1) * GRID + profile + XY_CLEARANCE)
+        local opening = lip_opening_at(math.min(LIP_HEIGHT, z + step_h))
+        local inner_w = math.min(outer_w - 0.2, (ux - 1) * GRID + opening)
+        local inner_d = math.min(outer_d - 0.2, (uy - 1) * GRID + opening)
         local bx, by = (outer_w - inner_w) * 0.5, (outer_d - inner_d) * 0.5
-        builder:add {mesh = api.make_cube(outer_w, by, step_h), x = 0, y = 0, z = z0 + z}
-        builder:add {mesh = api.make_cube(outer_w, by, step_h), x = 0, y = outer_d - by, z = z0 + z}
-        builder:add {mesh = api.make_cube(bx, inner_d, step_h), x = 0, y = by, z = z0 + z}
-        builder:add {mesh = api.make_cube(bx, inner_d, step_h), x = outer_w - bx, y = by, z = z0 + z}
+        builder:add(shapes.cube_at(outer_w, by, step_h, 0, 0, z0 + z))
+        builder:add(shapes.cube_at(outer_w, by, step_h, 0, outer_d - by, z0 + z))
+        builder:add(shapes.cube_at(bx, inner_d, step_h, 0, by, z0 + z))
+        builder:add(shapes.cube_at(bx, inner_d, step_h, outer_w - bx, by, z0 + z))
     end
 end
 
@@ -147,7 +153,7 @@ function execute(opts)
     end
 
     if opts.stacking_lip then
-        add_stacking_lip(bin, ow, od, ux, uy, body_top)
+        add_stacking_lip(shapes, bin, ow, od, ux, uy, body_top)
     end
 
     if opts.label ~= "" then

@@ -89,8 +89,22 @@ function execute(opts)
         end
     end
 
+    local plate = api.make_cube(plate_w, plate_d, thickness)
+    local plate_bounds = plate:bounds()
+    local object_translate = {
+        x = -plate_bounds.min_x,
+        y = -plate_bounds.min_y,
+        z = -plate_bounds.min_z
+    }
+    for _, volume in ipairs(other_volumes) do
+        volume.translate.x = (volume.translate.x or 0) - object_translate.x
+        volume.translate.y = (volume.translate.y or 0) - object_translate.y
+        volume.translate.z = (volume.translate.z or 0) - object_translate.z
+    end
+
     api.project:add_object {
-        mesh = api.make_cube(plate_w, plate_d, thickness),
+        mesh = plate,
+        translate = object_translate,
         other_volumes = other_volumes,
         object_params = {
             fill_density = "100%",

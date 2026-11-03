@@ -32,6 +32,20 @@ function M.cylinder_at(radius, height, cx, cy, z0)
     }
 end
 
+--- Places a cube by its actual bounds. PrusaSlicer's cube is centred around
+-- its local origin; tests deliberately use a different origin so callers must
+-- never depend on either convention.
+function M.cube_at(w, d, h, x0, y0, z0)
+    local mesh = api.make_cube(w, d, h)
+    local b = mesh:bounds()
+    return {
+        mesh = mesh,
+        x = x0 - b.min_x,
+        y = y0 - b.min_y,
+        z = z0 - b.min_z
+    }
+end
+
 --- A rectangular slab with rounded vertical corners, as a list of solid pieces.
 -- Built as two overlapping bars in a cross plus four corner cylinders, which is
 -- a union and therefore expressible with Solid volumes alone. Spans
@@ -42,12 +56,12 @@ function M.rounded_slab(w, d, h, r)
     r = math.min(r or 0, w * 0.5, d * 0.5)
 
     if r <= 0.05 then
-        return { { mesh = api.make_cube(w, d, h), x = 0, y = 0, z = 0 } }
+        return { M.cube_at(w, d, h, 0, 0, 0) }
     end
 
     local pieces = {
-        { mesh = api.make_cube(w, d - 2 * r, h), x = 0, y = r, z = 0 },
-        { mesh = api.make_cube(w - 2 * r, d, h), x = r, y = 0, z = 0 }
+        M.cube_at(w, d - 2 * r, h, 0, r, 0),
+        M.cube_at(w - 2 * r, d, h, r, 0, 0)
     }
 
     for _, c in ipairs({ { r, r }, { w - r, r }, { r, d - r }, { w - r, d - r } }) do

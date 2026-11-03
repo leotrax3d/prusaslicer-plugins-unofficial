@@ -16,8 +16,8 @@ local function mesh(kind, a, b, c)
     local value = { kind = kind, a = a, b = b, c = c }
     function value:bounds()
         if self.kind == "cube" then
-            return { min_x = 0, min_y = 0, min_z = 0,
-                     max_x = self.a, max_y = self.b, max_z = self.c }
+            return { min_x = -self.a/2, min_y = -self.b/2, min_z = -self.c/2,
+                     max_x = self.a/2, max_y = self.b/2, max_z = self.c/2 }
         end
         return { min_x = -self.a, min_y = -self.a, min_z = 0,
                  max_x = self.a, max_y = self.a, max_z = self.b }

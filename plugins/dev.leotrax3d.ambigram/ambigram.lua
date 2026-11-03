@@ -94,12 +94,10 @@ function execute(opts)
         local pd = span_y + 2 * margin
         -- The keyring tab is added on the left, so the text stays centred on the
         -- plate's text area rather than on the plate including its tab.
-        art:add {
-            mesh = api.make_cube(pw, pd, plate_th),
-            x = -(span_x * 0.5 + margin + tab),
-            y = -pd * 0.5,
-            z = 0
-        }
+        art:add(shapes.cube_at(
+            pw, pd, plate_th,
+            -(span_x * 0.5 + margin + tab), -pd * 0.5, 0
+        ))
 
         if opts.keyring then
             local hole = shapes.cylinder_at(

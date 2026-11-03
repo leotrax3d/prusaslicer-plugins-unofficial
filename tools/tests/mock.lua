@@ -19,7 +19,9 @@ end
 
 objects = {}
 api = {
-    make_cube = function(w,d,h) return mesh(0,w,0,d,0,h,"cube") end,
+    -- Real alpha13 cubes are centred. Keeping the mock centred catches every
+    -- accidental assumption that a cube begins at zero.
+    make_cube = function(w,d,h) return mesh(-w/2,w/2,-d/2,d/2,-h/2,h/2,"cube") end,
     -- deliberately NOT centred, to prove nothing assumes a centred cylinder
     make_cylinder = function(r,h) return mesh(-r,r,-r,r,0,h,"cyl") end,
     make_cone = function(r,h) return mesh(-r,r,-r,r,0,h,"cone") end,
