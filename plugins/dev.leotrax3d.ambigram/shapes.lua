@@ -32,10 +32,18 @@ function M.cylinder_at(radius, height, cx, cy, z0)
     }
 end
 
+--- Places a cube by its actual bounds. PrusaSlicer's cube is centred around
+-- its local origin; tests deliberately use a different origin so callers must
+-- never depend on either convention.
 function M.cube_at(w, d, h, x0, y0, z0)
     local mesh = api.make_cube(w, d, h)
     local b = mesh:bounds()
-    return {mesh=mesh, x=x0-b.min_x, y=y0-b.min_y, z=z0-b.min_z}
+    return {
+        mesh = mesh,
+        x = x0 - b.min_x,
+        y = y0 - b.min_y,
+        z = z0 - b.min_z
+    }
 end
 
 --- A rectangular slab with rounded vertical corners, as a list of solid pieces.

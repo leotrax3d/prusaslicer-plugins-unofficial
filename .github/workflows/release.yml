@@ -60,10 +60,17 @@ jobs:
           LUA: lua5.4
         run: ./tools/run-tests.sh
 
+      - name: Assemble combined bundles
+        env:
+          LUA: lua5.4
+        run: |
+          ./tools/build-bundles.sh
+          ./tools/check-plugins.sh dist/bundles/*/
+
       - name: Build bundle archives
         run: |
           mkdir -p dist
-          for bundle in plugins/*/; do
+          for bundle in plugins/*/ dist/bundles/*/; do
             id=$(basename "$bundle")
             # Zip from inside the bundle so entries are stored flat, with no
             # directory prefix. -X drops platform-specific extra fields.
@@ -90,7 +97,7 @@ jobs:
       - name: Compare manifest versions against the tag
         run: |
           tag_version="${VERSION#v}"
-          for bundle in plugins/*/; do
+          for bundle in plugins/*/ bundles/*/; do
             id=$(basename "$bundle")
             manifest_version=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['version'])" "$bundle/manifest.json")
             if [ "$manifest_version" != "$tag_version" ]; then

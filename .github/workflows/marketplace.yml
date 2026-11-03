@@ -20,9 +20,15 @@ jobs:
         shell: bash
         run: |
           name="${GITHUB_REF_NAME%/v*}"
-          dir="plugins/$name"
 
-          if [ "$name" = "$GITHUB_REF_NAME" ] || [ ! -f "$dir/manifest.json" ]; then
+          # Combined bundles are assembled from plugins/ by tools/build-bundles.sh.
+          if [ -f "bundles/$name/manifest.json" ]; then
+            dir="dist/bundles/$name"
+          else
+            dir="plugins/$name"
+          fi
+
+          if [ "$name" = "$GITHUB_REF_NAME" ] || { [ ! -f "$dir/manifest.json" ] && [ ! -f "bundles/$name/manifest.json" ]; }; then
             echo "::error::Tag '$GITHUB_REF_NAME' must be <bundle-directory>/v<version>"
             exit 1
           fi
@@ -41,6 +47,8 @@ jobs:
           luac5.4 -p plugins/*/*.lua
           ./tools/check-plugins.sh
           ./tools/run-tests.sh
+          ./tools/build-bundles.sh
+          ./tools/check-plugins.sh dist/bundles/*/
 
       - name: Sign and submit selected bundle
         uses: prusa3d/plugin-marketplace-publish@v1

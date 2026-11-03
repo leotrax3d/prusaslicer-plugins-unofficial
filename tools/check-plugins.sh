@@ -18,7 +18,13 @@ LUA=${LUA:-lua}
 status=0
 plugins_found=0
 
-for bundle in plugins/*/; do
+# Checks the given bundle directories, or every individual plugin by default.
+if [ $# -eq 0 ]; then
+    set -- plugins/*/
+fi
+
+for bundle in "$@"; do
+    bundle=${bundle%/}/
     bundle_id=$(basename "$bundle")
     echo "$bundle_id"
 
