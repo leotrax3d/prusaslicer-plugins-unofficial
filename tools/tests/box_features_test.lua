@@ -1,5 +1,5 @@
 dofile("tools/tests/mock.lua")
-dofile("plugins/com.leotrax3d.utilities/box_generator.lua")
+dofile("plugins/dev.leotrax3d.utilities/box_generator.lua")
 local base = {inner_width=80, inner_depth=60, inner_height=40, wall=2.0, floor_th=1.6,
     corner_radius=3, columns=1, rows=1, divider_th=1.6, divider_pct=100,
     stackable=false, finger_notch=true, with_lid=false, clearance=0.25, label="A"}

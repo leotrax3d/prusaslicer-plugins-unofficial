@@ -1,5 +1,5 @@
 dofile("tools/tests/mock.lua")
-dofile("plugins/com.leotrax3d.utilities/ambigram.lua")
+dofile("plugins/dev.leotrax3d.utilities/ambigram.lua")
 
 local function run(o) objects = {}; execute(o); return world_boxes(objects[1]) end
 local base = {text_a="Anna", text_b="", mirror=false, font_name="", text_size=20,

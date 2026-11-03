@@ -1,11 +1,11 @@
 {
-  "id": "com.leotrax3d.utilities",
+  "id": "dev.leotrax3d.utilities",
   "name": "Utilities",
   "description": "Parametric generators: storage boxes with lids and dividers, and overlay ambigrams",
   "category": "Utilities",
   "license": "MIT",
   "min_slicer_version": "3.0.0",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "leotrax3d",
   "repo": "https://github.com/leotrax3d/prusaslicer-plugins-unofficial",
   "required_apis": {

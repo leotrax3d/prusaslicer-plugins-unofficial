@@ -1,6 +1,6 @@
 # Ambigram
 
-**Bundle:** `com.leotrax3d.utilities` · **Menu:** Generators → Ambigram
+**Bundle:** `dev.leotrax3d.utilities` · **Menu:** Generators → Ambigram
 
 Builds a plate carrying a word that stays readable when you turn it around, by overlaying
 both readings into one shape.

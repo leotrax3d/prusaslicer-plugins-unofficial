@@ -29,7 +29,7 @@ origins, which setting keys are valid per volume). Those need a running slicer.
 
 ## Phase 1 — Complete the calibration set — in progress
 
-PrusaSlicer ships a Flow Tower and a Temperature Tower. The `com.leotrax3d.calibration`
+PrusaSlicer ships a Flow Tower and a Temperature Tower. The `dev.leotrax3d.calibration`
 bundle adds:
 
 | Plugin | Mechanism | Status |
@@ -50,7 +50,7 @@ samples. Depends on the geometry semantics that Phase 1 testing will confirm.
 ## Phase 3 — Parametric utility objects — started
 
 Eleven primitives plus negative volumes make genuine parametric modelling viable. The
-`com.leotrax3d.utilities` bundle is the start of it:
+`dev.leotrax3d.utilities` bundle is the start of it:
 
 | Plugin | Mechanism | Status |
 | --- | --- | --- |

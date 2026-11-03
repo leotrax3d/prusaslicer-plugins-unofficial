@@ -1,13 +1,12 @@
 # Installation
 
-PrusaSlicer 3.0 will eventually ship a plugin marketplace with one-click installs,
-ratings and signature verification. Until then, plugins are installed by hand: from a
-release archive, or by copying a bundle directory into the slicer's data directory. This
-document covers both.
+PrusaSlicer 3.0.0-alpha13 ships a plugin marketplace with one-click installs, ratings and
+signature verification. Use the marketplace for normal installation. Manual installation
+from a release archive or a checkout remains useful for development and testing.
 
 ## Requirements
 
-PrusaSlicer 3.0.0-alpha11 or newer. The bundle's `manifest.json` declares
+PrusaSlicer 3.0.0-alpha13 or newer. The bundle's `manifest.json` declares
 `min_slicer_version`, and the slicer refuses to load a bundle that requires a newer
 version than the one running.
 
@@ -22,7 +21,7 @@ Bundles go into a `lua` subdirectory of the PrusaSlicer data directory:
 | Linux | `~/.config/<app dir>/lua` |
 
 **`<app dir>` depends on your build.** It follows the application key the build was
-compiled with, and the 3.0 alphas do not use the plain name. A 3.0.0-alpha11 Windows
+compiled with, and the 3.0 alphas do not use the plain name. A 3.0.0-alpha13 Windows
 install has been observed using `PrusaSlicer3-dev`, giving
 `%APPDATA%\PrusaSlicer3-dev\lua`. Stable releases use `PrusaSlicer`. Launching with
 `--datadir` overrides all of this.
@@ -33,15 +32,24 @@ Rather than guessing, find the folder containing `PrusaSlicer.ini` and your save
 Bundles shipped with the slicer live in `resources/lua` alongside the application; both
 that directory and the one above are scanned at startup.
 
-## Installing from a release
+## Installing from the marketplace
+
+1. Open **Plugins → Plugin Marketplace** in PrusaSlicer.
+2. Find **Calibration Extras** or **Utilities**.
+3. Select **Install**. PrusaSlicer verifies the signed bundle automatically.
+
+Marketplace releases are reviewed by Prusa before they become publicly visible. If a new
+version is still under review, use the manual release method below.
+
+## Installing from a release manually
 
 The simplest route. Each [release](https://github.com/leotrax3d/prusaslicer-plugins-unofficial/releases)
 carries a ready-made ZIP per bundle, built and layout-checked by CI, so there is nothing to
 package yourself.
 
-1. Download `com.leotrax3d.calibration.zip` from the latest release.
+1. Download `dev.leotrax3d.calibration.zip` from the latest release.
 2. Unpack it into a directory named after the bundle id, inside the `lua` directory
-   described below — so `lua/com.leotrax3d.calibration/manifest.json`, and so on.
+   described below — so `lua/dev.leotrax3d.calibration/manifest.json`, and so on.
 3. Restart the slicer.
 
 **Unpack it; do not use the slicer's ZIP import.** The release archives are not signed
@@ -56,7 +64,7 @@ developing.
 ## Installing a bundle manually
 
 1. Close PrusaSlicer. Plugins are discovered once at startup.
-2. Copy the whole bundle directory — for example `plugins/com.leotrax3d.calibration` — into
+2. Copy the whole bundle directory — for example `plugins/dev.leotrax3d.calibration` — into
    the `lua` directory. Keep the directory name; it must match the `id` in
    `manifest.json`.
 3. Start PrusaSlicer.
@@ -66,7 +74,7 @@ The result should look like this:
 ```
 <data directory>/
 └── lua/
-    └── com.leotrax3d.calibration/
+    └── dev.leotrax3d.calibration/
         ├── manifest.json
         ├── fan_tower.lua
         ├── labels.lua
@@ -83,7 +91,7 @@ a generated parameter dialog; confirming it builds the objects in the current pr
 ```bash
 git clone https://github.com/leotrax3d/prusaslicer-plugins-unofficial.git
 cd prusaslicer-plugins-unofficial
-cp -r plugins/com.leotrax3d.calibration "<data directory>/lua/"
+cp -r plugins/dev.leotrax3d.calibration "<data directory>/lua/"
 ```
 
 Copy rather than symlink. Plugin file access is confined to the bundle's own directory,
@@ -98,7 +106,7 @@ marketplace will distribute, and it is worth knowing one rule about it:
 
 The installer opens the archive and looks for the entry named exactly `manifest.json`. If
 you compress the folder itself, that entry is called
-`com.leotrax3d.calibration/manifest.json`, no match is found, and the install fails with
+`dev.leotrax3d.calibration/manifest.json`, no match is found, and the install fails with
 `cannot load manifest.json`.
 
 Correct layout inside the archive:
@@ -114,8 +122,8 @@ tolerance_test.lua
 To build one by hand, compress the *contents* of the bundle directory:
 
 ```bash
-cd plugins/com.leotrax3d.calibration
-zip ../../com.leotrax3d.calibration.zip manifest.json *.lua
+cd plugins/dev.leotrax3d.calibration
+zip ../../dev.leotrax3d.calibration.zip manifest.json *.lua
 ```
 
 On Windows, select the files inside the folder and use Send to → Compressed folder.

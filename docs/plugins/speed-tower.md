@@ -1,6 +1,6 @@
 # Speed Tower
 
-**Menu:** Calibration → Speed Tower · **Bundle:** `com.leotrax3d.calibration`
+**Menu:** Calibration → Speed Tower · **Bundle:** `dev.leotrax3d.calibration`
 
 Finds the highest print speed a printer holds without visible quality loss.
 

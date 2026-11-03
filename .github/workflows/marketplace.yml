@@ -1,0 +1,49 @@
+name: Publish to Prusa Plugin Marketplace
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Select bundle from release tag
+        id: bundle
+        shell: bash
+        run: |
+          name="${GITHUB_REF_NAME%/v*}"
+          dir="plugins/$name"
+
+          if [ "$name" = "$GITHUB_REF_NAME" ] || [ ! -f "$dir/manifest.json" ]; then
+            echo "::error::Tag '$GITHUB_REF_NAME' must be <bundle-directory>/v<version>"
+            exit 1
+          fi
+
+          echo "dir=$dir" >> "$GITHUB_OUTPUT"
+
+      - name: Install Lua
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lua5.4
+
+      - name: Check all plugin bundles
+        env:
+          LUA: lua5.4
+        run: |
+          luac5.4 -p plugins/*/*.lua
+          ./tools/check-plugins.sh
+          ./tools/run-tests.sh
+
+      - name: Sign and submit selected bundle
+        uses: prusa3d/plugin-marketplace-publish@v1
+        with:
+          path: ${{ steps.bundle.outputs.dir }}
+          private-key: ${{ secrets.PRUSA_SLICER_PLUGIN_MARKETPLACE_SIGNING_KEY }}

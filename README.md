@@ -1,8 +1,8 @@
 # prusaslicer-plugins-unofficial
 
 [![Latest release](https://img.shields.io/github/v/release/leotrax3d/prusaslicer-plugins-unofficial?label=release)](https://github.com/leotrax3d/prusaslicer-plugins-unofficial/releases/latest)
-[![Release workflow](https://img.shields.io/github/actions/workflow/status/leotrax3d/prusaslicer-plugins-unofficial/release.yml?label=build)](https://github.com/leotrax3d/prusaslicer-plugins-unofficial/actions/workflows/release.yml)
-[![PrusaSlicer 3.0.0-alpha11](https://img.shields.io/badge/PrusaSlicer-3.0.0--alpha11-orange)](https://github.com/prusa3d/PrusaSlicer/releases)
+[![Marketplace workflow](https://img.shields.io/github/actions/workflow/status/leotrax3d/prusaslicer-plugins-unofficial/marketplace.yml?label=marketplace)](https://github.com/leotrax3d/prusaslicer-plugins-unofficial/actions/workflows/marketplace.yml)
+[![PrusaSlicer 3.0.0-alpha13](https://img.shields.io/badge/PrusaSlicer-3.0.0--alpha13-orange)](https://github.com/prusa3d/PrusaSlicer/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 An unofficial collection of Lua plugins for
@@ -26,27 +26,25 @@ and which slicer settings it changes.
 | **[Box Generator](docs/plugins/box-generator.md)** | Storage boxes, drawer inserts and organiser trays, specified by the space you need *inside* them. Lid, compartment dividers, stacking groove, finger notch and engraved label. | Generators → Parametric Box |
 | **[Ambigram](docs/plugins/ambigram.md)** | A word overlaid with its own 180° rotation, or with a second word, so the plate reads both ways round. | Generators → Ambigram |
 
-Two bundles. The three calibration plugins in `com.leotrax3d.calibration` change print or
+Two bundles. The three calibration plugins in `dev.leotrax3d.calibration` change print or
 filament settings in the project they create and do not restore them, so run those in a
-throwaway project. The generators in `com.leotrax3d.utilities` are pure geometry and change
+throwaway project. The generators in `dev.leotrax3d.utilities` are pure geometry and change
 nothing.
 
 ## Installation
 
-Download the bundles from the
-[latest release](https://github.com/leotrax3d/prusaslicer-plugins-unofficial/releases/latest)
-and unpack each into your PrusaSlicer data directory under `lua/<bundle-id>/` — so
-`lua/com.leotrax3d.calibration/` and `lua/com.leotrax3d.utilities/` — then restart the
-slicer. Install only the bundles you want; they are independent.
+In PrusaSlicer 3.0.0-alpha13 or newer, open **Plugins → Plugin Marketplace**, find the
+bundle you want and install it. Marketplace releases are signed and verified automatically.
 
-Do not use the slicer's ZIP import — the archives are unsigned, and that path additionally
-requires the author's public key on your machine. Unpacking has no such requirement.
+For development builds or versions not yet approved in the marketplace, download a bundle
+from the [latest release](https://github.com/leotrax3d/prusaslicer-plugins-unofficial/releases/latest)
+and unpack it into the PrusaSlicer data directory under `lua/<bundle-id>/`.
 [`docs/installation.md`](docs/installation.md) has the per-platform paths, the data
 directory naming that catches people out, and troubleshooting.
 
 ## Status
 
-Confirmed working in PrusaSlicer 3.0.0-alpha11 on Windows: the plugins load, the dialogs
+Confirmed working in PrusaSlicer 3.0.0-alpha13 on Windows: the plugins load, the dialogs
 generate, and the objects and engraved labels come out as intended.
 
 The API is experimental and Prusa expects breaking changes, so treat compatibility with

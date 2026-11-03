@@ -1,6 +1,6 @@
 # Tolerance Test
 
-**Menu:** Calibration → Tolerance Test · **Bundle:** `com.leotrax3d.calibration`
+**Menu:** Calibration → Tolerance Test · **Bundle:** `dev.leotrax3d.calibration`
 
 Determines the clearance your parts need to fit together, for this printer and this
 filament.

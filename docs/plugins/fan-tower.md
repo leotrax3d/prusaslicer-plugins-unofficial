@@ -1,6 +1,6 @@
 # Fan Tower
 
-**Menu:** Calibration → Fan Tower · **Bundle:** `com.leotrax3d.calibration`
+**Menu:** Calibration → Fan Tower · **Bundle:** `dev.leotrax3d.calibration`
 
 Finds the right amount of part cooling for a filament by printing every fan speed in one
 object.

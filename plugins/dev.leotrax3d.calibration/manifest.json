@@ -1,11 +1,11 @@
 {
-	"id": "com.leotrax3d.calibration",
+	"id": "dev.leotrax3d.calibration",
 	"name": "Calibration Extras",
 	"description": "Additional calibration prints: Fan Tower, Speed Tower, Tolerance Test",
 	"category": "Calibration",
 	"license": "MIT",
 	"min_slicer_version": "3.0.0",
-	"version": "0.2.0",
+	"version": "0.2.1",
 	"author": "leotrax3d",
 	"repo": "https://github.com/leotrax3d/prusaslicer-plugins-unofficial",
 	"required_apis": {

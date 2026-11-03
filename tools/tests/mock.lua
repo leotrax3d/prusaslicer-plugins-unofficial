@@ -9,7 +9,7 @@
 --
 -- world_boxes() replays the volume list the way the slicer would: `rotate` about
 -- the volume's local origin, then `translate`, then the object's own translate.
-package.path = "plugins/com.leotrax3d.utilities/?.lua;" .. package.path
+package.path = "plugins/dev.leotrax3d.utilities/?.lua;" .. package.path
 VolumeType = {Solid="Solid", Negative="Negative", Modifier="Modifier"}
 
 local function mesh(minx,maxx,miny,maxy,minz,maxz,tag)
