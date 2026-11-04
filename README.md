@@ -26,20 +26,25 @@ and which slicer settings it changes.
 | **[Gridfinity Bin Generator](docs/plugins/box-generator.md)** | Gridfinity-compatible bins in 42 mm grid units, with compartments, stacking lip, magnet pockets and an optional label. | Generators → Gridfinity Bin |
 | **[Mouse Ears](docs/snippets/mouse-ears.md)** | Start G-code that prints anti-warp discs on the corners of any model. The plugin shows it in a text field to copy into the printer's start G-code. | Generators → Mouse Ears |
 | **[Ambigram](docs/plugins/ambigram.md)** | A word overlaid with its own 180° rotation, or with a second word, so the plate reads both ways round. | Generators → Ambigram |
+| **[Smart Print Presets](docs/plugins/smart-print-presets.md)** | Temporary presets for prototypes, small parts, strength, surfaces, accuracy, thin features and overhangs. | Print Goals |
 
-Each function is an independent Marketplace plugin, so users install and update only what
-they need. Two bundles combine them for a single install: **Calibration Extras**
+Each generator and calibration function is available as an independent Marketplace plugin,
+so users install and update only what they need. Two bundles combine them for a single
+install: **Calibration Extras**
 (`dev.leotrax3d.calibration`: Fan Tower, Speed Tower, Tolerance Test) and **Utilities**
 (`dev.leotrax3d.utilities`: Gridfinity Bin). They are assembled from the
 individual plugins by `tools/build-bundles.sh`, so only `bundles/<id>/manifest.json` and
 `plugins.txt` live in the repository.
 
+**Smart Print Presets** is one Marketplace plugin containing six temporary Print Goals.
+They layer on top of the active profiles and disappear cleanly when disabled.
+
 ![Calibration Extras bundle](docs/marketplace/images/dev.leotrax3d.calibration.png)
 ![Utilities bundle](docs/marketplace/images/dev.leotrax3d.utilities.png)
 
-Fan Tower and Speed Tower change print or filament settings in the current
-project and do not restore them, so run those two in a throwaway project. The other three
-plugins keep their changes on the generated objects.
+Fan Tower and Speed Tower change print or filament settings in the current project and do
+not restore them, so run those two in a throwaway project. Smart Print Presets uses the
+slicer's reversible Print Goal override layer instead.
 
 ## Installation
 

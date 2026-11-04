@@ -10,6 +10,7 @@ slicer settings it changes.
 | [Tolerance Test](tolerance-test.md) | `dev.leotrax3d.tolerance-test` | Find the clearance parts need to fit |
 | [Gridfinity Bin Generator](box-generator.md) | `dev.leotrax3d.box-generator` | Gridfinity-compatible compartment bins |
 | [Ambigram](ambigram.md) | `dev.leotrax3d.ambigram` | A word that stays readable turned around |
+| [Smart Print Presets](smart-print-presets.md) | `dev.leotrax3d.smart-print-presets` | Temporary goal-oriented print presets |
 
 Fan Tower and Speed Tower change print or filament settings in the project they create and
 do not restore them afterwards, so run those in a throwaway project. Tolerance Test, Box
