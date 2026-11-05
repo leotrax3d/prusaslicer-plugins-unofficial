@@ -208,8 +208,12 @@ function execute(opts)
         )
         add_ring(bin, SUPPORT, ow, od, ux, uy, support_z)
     else
-        -- Each compartment is its own negative pocket. The material between the
-        -- pockets is therefore a divider even after PrusaSlicer sorts volume types.
+        -- Each compartment is one negative cube. Do not build these cuts from
+        -- rounded_slab(): its six overlapping negative volumes share coplanar
+        -- bottom faces. PrusaSlicer's boolean result is then non-manifold and
+        -- may recognize the floor below only one compartment as a top surface.
+        -- One connected cut per compartment keeps every floor sliceable. The
+        -- material between the cuts remains the divider.
         local usable_w = ow - 2 * WALL - (columns - 1) * divider
         local usable_d = od - 2 * WALL - (rows - 1) * divider
         local cell_w, cell_d = usable_w / columns, usable_d / rows
@@ -218,11 +222,10 @@ function execute(opts)
             for row = 0, rows - 1 do
                 local x = WALL + col * (cell_w + divider)
                 local y = WALL + row * (cell_d + divider)
-                bin:add_slab(
-                    shapes.rounded_slab(cell_w, cell_d, cavity_h,
-                                        math.min(2.8, cell_w * 0.25, cell_d * 0.25)),
-                    {x = x, y = y, z = cavity_z}, VolumeType.Negative
-                )
+                local cavity = shapes.cube_at(cell_w, cell_d, cavity_h,
+                                              x, y, cavity_z)
+                cavity.type = VolumeType.Negative
+                bin:add(cavity)
             end
         end
     end

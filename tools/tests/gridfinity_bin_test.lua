@@ -91,6 +91,15 @@ check("cavity starts above base and floor", cavity.z0, 5.95)
 check("left wall", cavity.x0, 1.2)
 check("right wall", 83.5-cavity.x1, 1.2)
 
+local compartment_cuts = 0
+for _, b in ipairs(boxes) do
+    if b.type == "Negative" and b.tag == "cube"
+       and math.abs(b.z0 - 5.95) < 1e-6 then
+        compartment_cuts = compartment_cuts + 1
+    end
+end
+check("one connected negative volume per compartment", compartment_cuts, 2)
+
 -- No cavity may cross the intended 1.2 mm centre divider. This specifically
 -- guards against the old add-solid-after-negative ordering bug.
 local divider_center = 83.5 * 0.5
