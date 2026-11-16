@@ -15,6 +15,9 @@ open CAD for.
 
 ## Plugins
 
+**[QR Code Generator](docs/plugins/qr-code.md)** creates raised QR plates from text or URLs, available individually and in Utilities.
+
+
 Each page covers what the plugin builds, every parameter, how to read the printed result,
 and which slicer settings it changes.
 
@@ -32,7 +35,7 @@ Each generator and calibration function is available as an independent Marketpla
 so users install and update only what they need. Two bundles combine them for a single
 install: **Calibration Extras**
 (`dev.leotrax3d.calibration`: Fan Tower, Speed Tower, Tolerance Test) and **Utilities**
-(`dev.leotrax3d.utilities`: Gridfinity Bin). They are assembled from the
+(`dev.leotrax3d.utilities`: Gridfinity Bin and QR Code). They are assembled from the
 individual plugins by `tools/build-bundles.sh`, so only `bundles/<id>/manifest.json` and
 `plugins.txt` live in the repository.
 

@@ -1,0 +1,14 @@
+{
+  "id": "dev.leotrax3d.qr-code",
+  "name": "QR Code Generator",
+  "description": "Raised QR codes on a plate with a four-module quiet zone",
+  "category": "Utilities",
+  "license": "MIT AND BSD-3-Clause",
+  "min_slicer_version": "3.0.0-alpha13",
+  "version": "1.0.0",
+  "author": "7beaf341-c8c6-4b13-b5df-33bbb7c42953",
+  "repo": "https://github.com/leotrax3d/prusaslicer-plugins-unofficial",
+  "required_apis": {
+    "project.plugin": "1.0.0"
+  }
+}

@@ -1,12 +1,14 @@
 {
   "id": "dev.leotrax3d.utilities",
   "name": "Utilities",
-  "description": "Parametric generators: Gridfinity-compatible storage bins",
+  "description": "Parametric generators: Gridfinity-compatible storage bins and QR code plates",
   "category": "Utilities",
-  "license": "MIT",
+  "license": "MIT AND BSD-3-Clause",
   "min_slicer_version": "3.0.0-alpha13",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "author": "7beaf341-c8c6-4b13-b5df-33bbb7c42953",
   "repo": "https://github.com/leotrax3d/prusaslicer-plugins-unofficial",
-  "required_apis": { "project.plugin": "1.0.0" }
+  "required_apis": {
+    "project.plugin": "1.0.0"
+  }
 }
