@@ -86,3 +86,13 @@ published as a Go module). Publishing follows the
   raise its score. Use Obico for reliable detection.
 - This release has no page in the Connect web app. Status and incidents are available
   through the routes.
+
+## Publishing
+
+`.github/workflows/connect-print-guard.yml` follows the
+[GitHub Actions guide](https://plugin-marketplace.prusa3d.com/docs/connect/github-actions).
+After the one-time setup described at the top of that file, a release is:
+
+```bash
+gh release create print-guard/v0.1.0 --title "Print Guard 0.1.0" --notes-file connect/print-guard/CHANGELOG.md
+```
