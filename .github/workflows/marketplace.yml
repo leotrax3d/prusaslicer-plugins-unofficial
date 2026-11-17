@@ -10,9 +10,6 @@ permissions:
 
 jobs:
   publish:
-    # Prusa Connect extensions under connect/ publish through their own
-    # workflow (connect-print-guard.yml).
-    if: ${{ !startsWith(github.event.release.tag_name, 'print-guard/') }}
     runs-on: ubuntu-latest
 
     steps:
