@@ -1,0 +1,63 @@
+name: Print Guard (Prusa Connect extension)
+
+# Checks connect/print-guard on every push that touches it. A GitHub release
+# tagged print-guard/v<version> (the version in connect/print-guard/module.yaml)
+# hands the commit to the Prusa Connect marketplace builder, which builds every
+# platform, signs with the key in the `release` environment, attests and uploads
+# the release with its source for review.
+#
+# One-time setup (https://plugin-marketplace.prusa3d.com/docs/connect/github-actions):
+#   1. Register a signing key under "Signing keys" in the author console.
+#   2. Create the GitHub environment `release`, limited to tags print-guard/v*,
+#      with the private key as PRUSA_CONNECT_EXTENSION_SIGNING_KEY.
+#   3. Add a trusted publisher in the author console: extension id
+#      github.com/leotrax3d/prusaslicer-plugins-unofficial/connect/print-guard,
+#      repository leotrax3d/prusaslicer-plugins-unofficial, workflow file
+#      connect-print-guard.yml, environment release.
+
+on:
+  push:
+    paths:
+      - connect/print-guard/**
+      - .github/workflows/connect-print-guard.yml
+  pull_request:
+    paths:
+      - connect/print-guard/**
+      - .github/workflows/connect-print-guard.yml
+  release:
+    types: [published]
+
+jobs:
+  check:
+    if: github.event_name != 'release'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: connect/print-guard
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: connect/print-guard/go.mod
+          cache: false
+      - run: make check
+      - run: make release
+
+  publish:
+    if: github.event_name == 'release' && startsWith(github.event.release.tag_name, 'print-guard/v')
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    uses: prusa3d/prusa-connect-marketplace-publish/.github/workflows/publish.yml@v1
+    with:
+      path: connect/print-guard
+      # This release has no browser bundle.
+      bundle-command: "true"
+      core-ref: v0.1.0-beta.1 # Prusa Connect into .core/, until the SDK is published
+    secrets:
+      PRUSA_CONNECT_EXTENSION_SIGNING_KEY: ${{ secrets.PRUSA_CONNECT_EXTENSION_SIGNING_KEY }}
